@@ -1,126 +1,83 @@
 "use client";
 
-import {
-  GraduationCap,
-  Code,
-  Palette,
-  BarChart,
-  Languages,
-  UserCheck,
-} from "lucide-react";
+import Link from "next/link";
 
-import { cn } from "@/lib/utils";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-
-interface FeaturedItem {
-  heading: string;
-  description: string;
-  icon: React.ReactNode;
+interface HeroSectionProps {
+  event?: {
+    title: string;
+    date: string;
+    description: string;
+    link: string;
+    image?: string; // optional background image
+  };
 }
 
-interface FeaturedTutorsProps {
-  label?: string;
-  title?: string;
-  description?: string;
-  items?: FeaturedItem[];
-  buttonText?: string;
-  buttonUrl?: string;
-  className?: string;
-}
+const HeroSection = ({ event }: HeroSectionProps) => {
+  // If event is undefined, render nothing or a placeholder
+  if (!event) {
+    return (
+      <section className="py-28 bg-gray-900 text-white text-center">
+        <p className="text-lg md:text-xl">No featured event available.</p>
+      </section>
+    );
+  }
 
-const FeaturedTutors = ({
-  label = "Featured",
-  title = "Featured Tutors & Skills",
-  description = "Learn from top-rated tutors across the most in-demand skills. Handpicked experts to help you grow faster.",
-  items = [
-    {
-      heading: "Web Development",
-      description:
-        "Master modern web technologies like React, Next.js, Node.js, and full-stack development from industry professionals.",
-      icon: <Code className="size-5 md:size-6" />,
-    },
-    {
-      heading: "UI / UX Design",
-      description:
-        "Learn user-centered design, Figma, design systems, and real-world product design techniques.",
-      icon: <Palette className="size-5 md:size-6" />,
-    },
-    {
-      heading: "Data & Analytics",
-      description:
-        "Understand data analysis, SQL, Power BI, and data-driven decision making with expert guidance.",
-      icon: <BarChart className="size-5 md:size-6" />,
-    },
-    {
-      heading: "Language Learning",
-      description:
-        "Improve communication skills with experienced language tutors for English and more.",
-      icon: <Languages className="size-5 md:size-6" />,
-    },
-    {
-      heading: "Career Mentorship",
-      description:
-        "Get 1-on-1 mentorship for interviews, career growth, and professional development.",
-      icon: <UserCheck className="size-5 md:size-6" />,
-    },
-    {
-      heading: "Academic Subjects",
-      description:
-        "Math, science, and academic support from qualified tutors for all levels.",
-      icon: <GraduationCap className="size-5 md:size-6" />,
-    },
-  ],
-  buttonText = "Explore All Tutors",
-  buttonUrl = "/tutors",
-  className,
-}: FeaturedTutorsProps) => {
   return (
-    <section className={cn("py-20 sm:py-24 lg:py-32", className)}>
-      <div className="container mx-auto px-4">
-        {/* Header */}
-        <div className="mb-12 max-w-3xl space-y-4">
-          <Badge variant="secondary">{label}</Badge>
-          <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl lg:text-5xl">
-            {title}
-          </h2>
-          <p className="text-muted-foreground text-base sm:text-lg">
-            {description}
-          </p>
-        </div>
+    <section
+      className="relative bg-gray-900 text-white overflow-hidden"
+      style={{
+        backgroundImage: event.image ? `url(${event.image})` : undefined,
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+      }}
+    >
+      {/* Overlay */}
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
 
-        {/* Grid */}
-        <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
-          {items.map((item, idx) => (
-            <div
-              key={idx}
-              className="flex gap-4 rounded-xl border bg-background p-6 transition hover:shadow-md"
-            >
-              <div className="flex size-12 shrink-0 items-center justify-center rounded-full bg-accent">
-                {item.icon}
-              </div>
+      <div className="container mx-auto px-4 py-28 relative z-10 flex flex-col items-start md:items-center md:text-center">
+        {/* Event Title */}
+        <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold mb-4 transition duration-700 ease-out transform translate-y-6 opacity-0 animate-fadeIn">
+          {event.title}
+        </h1>
 
-              <div className="space-y-2">
-                <h3 className="text-lg font-medium">{item.heading}</h3>
-                <p className="text-sm text-muted-foreground">
-                  {item.description}
-                </p>
-              </div>
-            </div>
-          ))}
-        </div>
+        {/* Event Date */}
+        <p className="text-cyan-400 text-lg md:text-xl font-semibold mb-6 transition duration-700 ease-out transform translate-y-6 opacity-0 animate-fadeIn delay-150">
+          {event.date}
+        </p>
 
-        {/* CTA */}
-        {buttonUrl && (
-          <div className="mt-14 flex justify-center">
-            <Button size="lg" asChild>
-              <a href={buttonUrl}>{buttonText}</a>
-            </Button>
-          </div>
-        )}
+        {/* Short Description */}
+        <p className="max-w-2xl text-white/80 text-md md:text-lg mb-8 transition duration-700 ease-out transform translate-y-6 opacity-0 animate-fadeIn delay-300">
+          {event.description}
+        </p>
+
+        {/* Join Button */}
+        <Link
+          href={event.link}
+          className="inline-block bg-cyan-400 text-gray-900 font-bold py-3 px-6 rounded-full hover:bg-white hover:text-cyan-400 transition-colors duration-300 transform translate-y-6 opacity-0 animate-fadeIn delay-450"
+        >
+          Join Now
+        </Link>
       </div>
+
+      {/* Tailwind Animation */}
+      <style jsx>{`
+        @layer utilities {
+          .animate-fadeIn {
+            @apply opacity-100 translate-y-0;
+          }
+          .delay-150 {
+            transition-delay: 150ms;
+          }
+          .delay-300 {
+            transition-delay: 300ms;
+          }
+          .delay-450 {
+            transition-delay: 450ms;
+          }
+        }
+      `}</style>
     </section>
   );
 };
 
-export { FeaturedTutors };
+export default HeroSection;
