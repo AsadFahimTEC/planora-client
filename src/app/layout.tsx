@@ -6,11 +6,12 @@ import { Footer2 } from "@/components/footer2";
 
 // import { TutorCard } from "./components/tutors/TutorCard";
 import { HelpCenter } from "@/components/help1";
-import FAQ from "./components/sections/faq";
+
 import { Toaster } from "sonner";
 import Navbar1 from "@/components/navbar1";
 import HeroSection from "@/components/HeroSection";
 import UpcomingEventsSlider from "@/components/UpcomingEventsSlider.tsx";
+import EventCategories from "./components/sections/EventCategories";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -49,7 +50,7 @@ export default function RootLayout({
 
         <UpcomingEventsSlider></UpcomingEventsSlider>
 
-        <FAQ></FAQ>
+        <EventCategories></EventCategories>
 
         <HelpCenter></HelpCenter>
 
