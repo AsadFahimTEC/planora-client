@@ -29,19 +29,20 @@ interface Footer2Props {
 
 const Footer2 = ({
   logo = {
-    src: "https://i.ibb.co/5gKqm97r/360-F-1562833067-i-MUS3-W5-R1z355geljjd-FWbg-F7g-Qv-Je0l-removebg-preview.png",
-    alt: "SkillBridge Logo",
-    title: "SkillBridge 🎓",
+    src: "https://i.ibb.co.com/fdW6xxg4/eventtwo.png",
+    alt: "Planora Logo",
+    title: "Planora 📅",
     url: "/",
   },
   className,
-  tagline = "Connect with Expert Tutors, Learn Anything",
+  tagline = "Smart Event Management",
   menuItems = [
     {
-      title: "All Tutors",
+      title: "All Events",
       links: [
-        { text: "Tutors", url: "/tutors" },
-        { text: "Profile", url: "/tutors/TutorsPageDynamic" },
+        { text: "About", url: "/about" },
+        { text: "Contact", url: "/contact" },
+        { text: "Privacy Policy", url: "/privacy" },
       ],
     },
     {
@@ -60,7 +61,7 @@ const Footer2 = ({
       ],
     },
   ],
-  copyright = "© 2026 SkillBridge 🎓 All rights reserved.",
+  copyright = "© 2026 Planora 📅 All rights reserved.",
   bottomLinks = [
     { text: "Terms and Conditions", url: "#" },
     { text: "Privacy Policy", url: "#" },
@@ -80,7 +81,7 @@ const Footer2 = ({
                     src={logo.src}
                     alt={logo.alt}
                     title={logo.title}
-                    className="h-10 w-10 rounded-md object-cover"
+                    className="h-18 w-18 rounded-md object-cover"
                   />
                   <LogoText className="text-xl font-bold">
                     {logo.title}

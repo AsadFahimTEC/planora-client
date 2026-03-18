@@ -46,14 +46,14 @@ interface NavbarProps {
 export default function Navbar1({
   logo = {
     url: "/",
-    src: "https://i.ibb.co/5gKqm97r/360-F-1562833067-i-MUS3-W5-R1z355geljjd-FWbg-F7g-Qv-Je0l-removebg-preview.png",
+    src: "https://i.ibb.co.com/fdW6xxg4/eventtwo.png",
     alt: "logo",
-    title: "SkillBridge 🎓",
+    title: "Planora 📅",
   },
   menu = [
     { title: "Home", url: "/" },
-    { title: "Tutors", url: "/tutors" },
-    { title: "Profile", url: "/profile" },
+    { title: "Events", url: "/events" },
+    { title: "Dashboard", url: "/dashboard" },
   ],
   auth = {
     login: { title: "Login", url: "/login" },
@@ -89,7 +89,7 @@ export default function Navbar1({
         <nav className="hidden lg:flex items-center justify-between">
           {/* Logo */}
           <a href={logo.url} className="flex items-center gap-2">
-            <img src={logo.src} alt={logo.alt} className="max-h-8 dark:invert" />
+            <img src={logo.src} alt={logo.alt} className="max-h-18 dark:invert" />
             <span className="text-lg font-semibold tracking-tighter">{logo.title}</span>
           </a>
 
