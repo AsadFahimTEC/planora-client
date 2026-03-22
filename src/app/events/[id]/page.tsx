@@ -32,7 +32,7 @@ export default function EventDetailsPage() {
   const params = useParams();
   const eventId = Number(params?.id);
 
-  // Find the event dynamically from the array
+  // Find the event dynamically
   const event = dummyEvents.find((e) => e.id === eventId);
 
   if (!event) {
@@ -44,6 +44,35 @@ export default function EventDetailsPage() {
       </section>
     );
   }
+
+  // Determine action button label and style
+  const getActionButton = () => {
+    let label = "";
+    let bgClass = "";
+
+    if (event.type === "Public" && event.fee === "Free") {
+      label = "Join";
+      bgClass = "bg-emerald-500 hover:bg-emerald-600 dark:bg-emerald-400 dark:hover:bg-emerald-500";
+    } else if (event.type === "Public" && event.fee === "Paid") {
+      label = "Pay & Join";
+      bgClass = "bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600";
+    } else if (event.type === "Private" && event.fee === "Free") {
+      label = "Request to Join";
+      bgClass = "bg-yellow-500 hover:bg-yellow-600 dark:bg-yellow-400 dark:hover:bg-yellow-500";
+    } else if (event.type === "Private" && event.fee === "Paid") {
+      label = "Pay & Request";
+      bgClass = "bg-rose-500 hover:bg-rose-600 dark:bg-rose-400 dark:hover:bg-rose-500";
+    }
+
+    return (
+      <Link
+        href={event.link}
+        className={`inline-block px-6 py-3 font-bold text-white rounded-full shadow-lg transition-all duration-300 ${bgClass}`}
+      >
+        {label}
+      </Link>
+    );
+  };
 
   return (
     <section className="py-16 bg-slate-100 dark:bg-slate-900 transition-colors duration-500 min-h-screen">
@@ -86,14 +115,9 @@ export default function EventDetailsPage() {
             <p>{event.description || "No description provided for this event."}</p>
           </div>
 
-          {/* Join Button */}
+          {/* Action Button */}
           <div className="flex justify-center">
-            <Link
-              href={event.link}
-              className="inline-block px-6 py-3 font-bold text-white bg-indigo-600 rounded-full shadow-lg hover:shadow-2xl hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 transition-all duration-300"
-            >
-              Join Event
-            </Link>
+            {getActionButton()}
           </div>
         </div>
       </div>
