@@ -5,7 +5,7 @@ import "./globals.css";
 import { Footer2 } from "@/components/footer2";
 
 // import { TutorCard } from "./components/tutors/TutorCard";
-import { HelpCenter } from "@/components/help1";
+// import { HelpCenter } from "@/components/help1";
 
 import { Toaster } from "sonner";
 import Navbar1 from "@/components/navbar1";
@@ -56,7 +56,7 @@ export default function RootLayout({
 
         <CallToActionSection></CallToActionSection>
 
-        <HelpCenter></HelpCenter>
+        {/* <HelpCenter></HelpCenter> */}
 
         <Footer2></Footer2>
       </body>
