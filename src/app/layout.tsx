@@ -11,7 +11,7 @@ import { Toaster } from "sonner";
 import Navbar1 from "@/components/navbar1";
 import HeroSection from "@/components/HeroSection";
 
-import EventCategories from "./components/sections/EventCategories";
+import EventCategories from "@/app/components/sections/EventCategories";
 import UpcomingEventsSlider from "@/components/UpcomingEventsSlider";
 import CallToActionSection from "./components/call/CallToActionSection";
 
