@@ -1,6 +1,8 @@
+"use client";
+
 import Link from "next/link";
 import { cn } from "@/lib/utils";
-import { Logo, LogoImage, LogoText } from "@/components/logo";
+import { LogoImage, LogoText } from "@/components/logo";
 
 interface MenuItem {
   title: string;
@@ -10,7 +12,7 @@ interface MenuItem {
   }[];
 }
 
-interface Footer2Props {
+interface FooterProps {
   logo?: {
     url: string;
     src: string;
@@ -27,9 +29,9 @@ interface Footer2Props {
   }[];
 }
 
-const Footer2 = ({
+const Footer = ({
   logo = {
-    src: "https://i.ibb.co.com/fdW6xxg4/eventtwo.png",
+    src: "https://i.ibb.co.com/xqTSJz4k/planorafinal.png",
     alt: "Planora Logo",
     title: "Planora 📅",
     url: "/",
@@ -38,7 +40,15 @@ const Footer2 = ({
   tagline = "Smart Event Management",
   menuItems = [
     {
-      title: "All Events",
+      title: "Platform",
+      links: [
+        { text: "Home", url: "/" },
+        { text: "Events", url: "/events" },
+        { text: "Dashboard", url: "/dashboard" },
+      ],
+    },
+    {
+      title: "Company",
       links: [
         { text: "About", url: "/about" },
         { text: "Contact", url: "/contact" },
@@ -46,18 +56,10 @@ const Footer2 = ({
       ],
     },
     {
-      title: "Company",
+      title: "Account",
       links: [
         { text: "Login", url: "/login" },
         { text: "Register", url: "/register" },
-      ],
-    },
-    {
-      title: "Social",
-      links: [
-        { text: "Twitter", url: "#" },
-        { text: "Instagram", url: "#" },
-        { text: "LinkedIn", url: "#" },
       ],
     },
   ],
@@ -66,49 +68,58 @@ const Footer2 = ({
     { text: "Terms and Conditions", url: "#" },
     { text: "Privacy Policy", url: "#" },
   ],
-}: Footer2Props) => {
+}: FooterProps) => {
   return (
-    <section className={cn("py-16 sm:py-20", className)}>
-      <div className="container">
+    <section
+      className={cn(
+        "py-16 border-t border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-900",
+        className
+      )}
+    >
+      <div className="max-w-7xl mx-auto px-6">
         <footer>
-          {/* Grid layout for responsive design */}
+
+          {/* Grid */}
           <div className="grid grid-cols-1 gap-10 md:grid-cols-2 lg:grid-cols-6">
-            {/* Logo + Tagline */}
-            <div className="col-span-1 lg:col-span-2">
-              <div className="flex items-center gap-3">
-                <Link href={logo.url} aria-label="SkillBridge Home" className="flex items-center gap-2">
-                  <LogoImage
-                    src={logo.src}
-                    alt={logo.alt}
-                    title={logo.title}
-                    className="h-18 w-18 rounded-md object-cover"
-                  />
-                  <LogoText className="text-xl font-bold">
-                    {logo.title}
-                  </LogoText>
-                </Link>
 
-              </div>
+            {/* Logo Section */}
+            <div className="lg:col-span-2">
+              <Link
+                href={logo.url}
+                className="flex items-center gap-2"
+              >
+                <LogoImage
+                  src={logo.src}
+                  alt={logo.alt}
+                  title={logo.title}
+                  className="h-16 w-auto dark:invert"
+                />
+                <LogoText className="text-lg font-semibold tracking-tighter text-slate-800 dark:text-white">
+                  {logo.title}
+                </LogoText>
+              </Link>
 
-              <p className="mt-4 text-sm font-medium text-muted-foreground">
+              <p className="mt-4 text-sm text-slate-600 dark:text-slate-400">
                 {tagline}
               </p>
             </div>
 
             {/* Menu Sections */}
-            {menuItems.map((section, sectionIdx) => (
-              <div key={sectionIdx}>
-                <h3 className="mb-4 text-base font-bold">{section.title}</h3>
-                <ul className="space-y-3 text-sm text-muted-foreground">
+            {menuItems.map((section, idx) => (
+              <div key={idx}>
+                <h3 className="mb-4 text-base font-semibold text-slate-800 dark:text-white">
+                  {section.title}
+                </h3>
+
+                <ul className="space-y-3 text-sm">
                   {section.links.map((link, linkIdx) => (
-                    <li key={linkIdx} className="font-medium">
+                    <li key={linkIdx}>
                       <Link
                         href={link.url}
-                        className="hover:text-primary transition-colors"
+                        className="text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
                       >
                         {link.text}
                       </Link>
-
                     </li>
                   ))}
                 </ul>
@@ -117,25 +128,33 @@ const Footer2 = ({
           </div>
 
           {/* Bottom Section */}
-          <div className="mt-14 border-t pt-6 text-sm font-medium text-muted-foreground">
-            <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-              <p>{copyright}</p>
+          <div className="mt-14 pt-6 border-t border-slate-300 dark:border-slate-700 text-sm">
+            <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+
+              <p className="text-slate-600 dark:text-slate-400">
+                {copyright}
+              </p>
+
               <ul className="flex flex-wrap gap-4">
-                {bottomLinks.map((link, linkIdx) => (
-                  <li key={linkIdx} className="underline hover:text-primary">
-                    <Link href={link.url}>
+                {bottomLinks.map((link, idx) => (
+                  <li key={idx}>
+                    <Link
+                      href={link.url}
+                      className="underline text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition"
+                    >
                       {link.text}
                     </Link>
                   </li>
-
                 ))}
               </ul>
+
             </div>
           </div>
+
         </footer>
       </div>
     </section>
   );
 };
 
-export { Footer2 };
+export default Footer;

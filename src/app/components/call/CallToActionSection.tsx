@@ -4,7 +4,7 @@ import Link from "next/link";
 
 const CallToActionSection = () => {
   return (
-    <section className="py-24 bg-gradient-to-b from-indigo-600 via-purple-600 to-pink-500 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 text-black dark:text-white">
+    <section className="py-24 bg-slate-100 dark:bg-slate-900 transition-colors duration-500">
       <div className="container mx-auto px-6 text-center">
         {/* Heading */}
         <h2 className="text-4xl md:text-5xl font-extrabold mb-6">

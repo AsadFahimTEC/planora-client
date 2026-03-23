@@ -2,7 +2,12 @@
 
 import { Menu } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 import {
   NavigationMenu,
@@ -12,7 +17,13 @@ import {
   NavigationMenuList,
   NavigationMenuTrigger,
 } from "@/components/ui/navigation-menu";
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 
 import StudentMenu from "@/app/components/navbar/StudentMenu";
 import TutorMenu from "@/app/components/navbar/TutorMenu";
@@ -22,8 +33,6 @@ import { useSession } from "@/hooks/useSession";
 interface MenuItem {
   title: string;
   url: string;
-  description?: string;
-  icon?: React.ReactNode;
   items?: MenuItem[];
 }
 
@@ -34,7 +43,6 @@ interface NavbarProps {
     src: string;
     alt: string;
     title: string;
-    className?: string;
   };
   menu?: MenuItem[];
   auth?: {
@@ -46,7 +54,7 @@ interface NavbarProps {
 export default function Navbar1({
   logo = {
     url: "/",
-    src: "https://i.ibb.co.com/fdW6xxg4/eventtwo.png",
+    src: "https://i.ibb.co.com/xqTSJz4k/planorafinal.png",
     alt: "logo",
     title: "Planora 📅",
   },
@@ -63,11 +71,10 @@ export default function Navbar1({
 }: NavbarProps) {
   const { user, loading, refreshSession } = useSession();
 
-  if (loading) return null; // Wait for session to load
+  if (loading) return null;
 
   const isLoggedIn = Boolean(user);
 
-  // Render role menus dynamically
   const renderRoleMenu = () => {
     if (!user) return null;
     switch (user.role) {
@@ -83,17 +90,29 @@ export default function Navbar1({
   };
 
   return (
-    <section className={cn("py-4 bg-white dark:bg-gray-900 shadow-sm", className)}>
-      <div className="container mx-auto px-4">
-        {/* Desktop Navbar */}
+    <section
+      className={cn(
+        "py-4 bg-slate-100 dark:bg-slate-900 border-b border-slate-300 dark:border-slate-700",
+        className
+      )}
+    >
+      <div className="max-w-7xl mx-auto px-6">
+        {/* Desktop */}
         <nav className="hidden lg:flex items-center justify-between">
-          {/* Logo */}
+          
+          {/* ✅ LOGO (UNCHANGED STYLE) */}
           <a href={logo.url} className="flex items-center gap-2">
-            <img src={logo.src} alt={logo.alt} className="max-h-18 dark:invert" />
-            <span className="text-lg font-semibold tracking-tighter">{logo.title}</span>
+            <img
+              src={logo.src}
+              alt={logo.alt}
+              className="max-h-18 dark:invert"
+            />
+            <span className="text-lg font-semibold tracking-tighter text-slate-800 dark:text-white">
+              {logo.title}
+            </span>
           </a>
 
-          {/* Center Menu */}
+          {/* Menu */}
           <div className="flex items-center gap-6">
             {!isLoggedIn && (
               <NavigationMenu>
@@ -106,36 +125,65 @@ export default function Navbar1({
             {renderRoleMenu()}
           </div>
 
-          {/* Auth Buttons */}
+          {/* Auth */}
           {!isLoggedIn && (
-            <div className="flex gap-2">
-              <Button asChild variant="outline" size="sm">
+            <div className="flex gap-3">
+              <Button
+                asChild
+                variant="outline"
+                className="border-slate-400 text-slate-700 hover:bg-slate-200 dark:border-slate-600 dark:text-slate-300 dark:hover:bg-slate-800"
+              >
                 <a href={auth.login.url}>{auth.login.title}</a>
               </Button>
-              <Button asChild size="sm">
+
+              <Button
+                asChild
+                className="bg-indigo-600 hover:bg-indigo-700 text-white"
+              >
                 <a href={auth.signup.url}>{auth.signup.title}</a>
               </Button>
             </div>
           )}
         </nav>
 
-        {/* Mobile Navbar */}
+        {/* Mobile */}
         <div className="flex items-center justify-between lg:hidden">
+          
+          {/* ✅ LOGO (UNCHANGED STYLE) */}
           <a href={logo.url} className="flex items-center gap-2">
-            <img src={logo.src} alt={logo.alt} className="max-h-8 dark:invert" />
+            <img
+              src={logo.src}
+              alt={logo.alt}
+              className="max-h-8 dark:invert"
+            />
           </a>
 
           <Sheet>
             <SheetTrigger asChild>
-              <Button variant="outline" size="icon">
-                <Menu className="h-5 w-5" />
+              <Button
+                variant="outline"
+                size="icon"
+                className="border-slate-400 dark:border-slate-600"
+              >
+                <Menu className="h-5 w-5 text-slate-800 dark:text-white" />
               </Button>
             </SheetTrigger>
-            <SheetContent side="right" className="w-72 sm:w-80">
+
+            <SheetContent
+              side="right"
+              className="w-72 sm:w-80 bg-slate-100 dark:bg-slate-900"
+            >
               <SheetHeader>
                 <SheetTitle>
                   <a href={logo.url} className="flex items-center gap-2">
-                    <img src={logo.src} alt={logo.alt} className="max-h-8 dark:invert" />
+                    <img
+                      src={logo.src}
+                      alt={logo.alt}
+                      className="max-h-8 dark:invert"
+                    />
+                    <span className="font-semibold text-slate-800 dark:text-white">
+                      {logo.title}
+                    </span>
                   </a>
                 </SheetTitle>
               </SheetHeader>
@@ -151,10 +199,18 @@ export default function Navbar1({
 
                 {!isLoggedIn && (
                   <div className="flex flex-col gap-3">
-                    <Button asChild variant="outline">
+                    <Button
+                      asChild
+                      variant="outline"
+                      className="border-slate-400 dark:border-slate-600"
+                    >
                       <a href={auth.login.url}>{auth.login.title}</a>
                     </Button>
-                    <Button asChild>
+
+                    <Button
+                      asChild
+                      className="bg-indigo-600 hover:bg-indigo-700 text-white"
+                    >
                       <a href={auth.signup.url}>{auth.signup.title}</a>
                     </Button>
                   </div>
@@ -168,16 +224,23 @@ export default function Navbar1({
   );
 }
 
-// Desktop Menu Helper
+/* Desktop Menu */
 const renderMenuItem = (item: MenuItem) => {
   if (item.items) {
     return (
       <NavigationMenuItem key={item.title}>
-        <NavigationMenuTrigger>{item.title}</NavigationMenuTrigger>
-        <NavigationMenuContent className="bg-popover text-popover-foreground">
+        <NavigationMenuTrigger className="text-slate-800 dark:text-white">
+          {item.title}
+        </NavigationMenuTrigger>
+
+        <NavigationMenuContent className="bg-slate-100 dark:bg-slate-800">
           {item.items.map((subItem) => (
-            <NavigationMenuLink asChild key={subItem.title} className="w-80">
-              <a>{subItem.title}</a>
+            <NavigationMenuLink
+              asChild
+              key={subItem.title}
+              className="w-72 hover:text-indigo-600"
+            >
+              <a href={subItem.url}>{subItem.title}</a>
             </NavigationMenuLink>
           ))}
         </NavigationMenuContent>
@@ -187,20 +250,32 @@ const renderMenuItem = (item: MenuItem) => {
 
   return (
     <NavigationMenuItem key={item.title}>
-      <NavigationMenuLink href={item.url}>{item.title}</NavigationMenuLink>
+      <NavigationMenuLink
+        href={item.url}
+        className="text-slate-700 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition"
+      >
+        {item.title}
+      </NavigationMenuLink>
     </NavigationMenuItem>
   );
 };
 
-// Mobile Menu Helper
+/* Mobile Menu */
 const renderMobileMenuItem = (item: MenuItem) => {
   if (item.items) {
     return (
-      <AccordionItem key={item.title} value={item.title} className="border-b-0">
-        <AccordionTrigger className="text-md py-0 font-semibold">{item.title}</AccordionTrigger>
-        <AccordionContent className="mt-2 flex flex-col gap-2">
+      <AccordionItem key={item.title} value={item.title}>
+        <AccordionTrigger className="font-semibold text-slate-800 dark:text-white">
+          {item.title}
+        </AccordionTrigger>
+
+        <AccordionContent className="flex flex-col gap-2 mt-2">
           {item.items.map((subItem) => (
-            <a key={subItem.title} href={subItem.url} className="text-md font-semibold">
+            <a
+              key={subItem.title}
+              href={subItem.url}
+              className="text-slate-600 dark:text-slate-400 hover:text-indigo-600"
+            >
               {subItem.title}
             </a>
           ))}
@@ -210,7 +285,11 @@ const renderMobileMenuItem = (item: MenuItem) => {
   }
 
   return (
-    <a key={item.title} href={item.url} className="text-md font-semibold">
+    <a
+      key={item.title}
+      href={item.url}
+      className="font-semibold text-slate-800 dark:text-white hover:text-indigo-600"
+    >
       {item.title}
     </a>
   );

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
-import { Footer2 } from "@/components/footer2";
+
 
 // import { TutorCard } from "./components/tutors/TutorCard";
 // import { HelpCenter } from "@/components/help1";
@@ -14,6 +14,9 @@ import HeroSection from "@/components/HeroSection";
 import EventCategories from "@/app/components/sections/EventCategories";
 import UpcomingEventsSlider from "@/components/UpcomingEventsSlider";
 import CallToActionSection from "./components/call/CallToActionSection";
+import Footer from "@/components/footer2";
+
+
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -58,7 +61,7 @@ export default function RootLayout({
 
         {/* <HelpCenter></HelpCenter> */}
 
-        <Footer2></Footer2>
+        <Footer></Footer>
       </body>
     </html>
   );
