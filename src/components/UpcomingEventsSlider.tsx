@@ -23,11 +23,23 @@ const dummyEvents: EventCard[] = [
   { id: 9, title: "Startup Seminar", date: "May 1, 2026", organizer: "BizHub", fee: "Free", link: "/events/9" },
 ];
 
+const gradients = [
+  "bg-gradient-to-br from-indigo-400 to-purple-500",
+  "bg-gradient-to-br from-pink-400 to-red-500",
+  "bg-gradient-to-br from-green-400 to-teal-500",
+  "bg-gradient-to-br from-yellow-400 to-orange-500",
+  "bg-gradient-to-br from-cyan-400 to-blue-500",
+  "bg-gradient-to-br from-purple-400 to-pink-500",
+  "bg-gradient-to-br from-rose-400 to-fuchsia-500",
+  "bg-gradient-to-br from-lime-400 to-emerald-500",
+  "bg-gradient-to-br from-indigo-300 to-sky-500",
+];
+
 export default function UpcomingEventsSlider() {
   return (
     <section className="py-20 bg-slate-100 dark:bg-slate-900 transition-colors duration-500">
       <div className="max-w-7xl mx-auto px-6">
-        
+
         {/* Section Heading */}
         <div className="text-center mb-14">
           <h2 className="text-4xl md:text-5xl font-extrabold text-slate-900 dark:text-white">
@@ -40,33 +52,29 @@ export default function UpcomingEventsSlider() {
 
         {/* Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-          {dummyEvents.map((event) => (
+          {dummyEvents.map((event, idx) => (
             <div
               key={event.id}
-              className="rounded-3xl p-6 shadow-md hover:shadow-xl transition-all duration-500 transform hover:-translate-y-2
-              bg-slate-200/70 dark:bg-slate-800 border border-slate-300 dark:border-slate-700"
+              className={`rounded-3xl p-6 shadow-md border border-slate-300 dark:border-slate-700
+                          text-white transition-transform duration-500 transform hover:-translate-y-2 hover:shadow-xl
+                          ${gradients[idx % gradients.length]} animate-fadeUp`}
+              style={{ animationDelay: `${idx * 0.15}s` }}
             >
               {/* Title */}
-              <h3 className="text-2xl font-bold mb-2 text-slate-900 dark:text-white">
-                {event.title}
-              </h3>
+              <h3 className="text-2xl font-bold mb-2">{event.title}</h3>
 
               {/* Date */}
-              <p className="text-sm text-slate-600 dark:text-slate-400 mb-1">
-                {event.date}
-              </p>
+              <p className="text-sm mb-1">{event.date}</p>
 
               {/* Organizer */}
-              <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">
-                Organizer: {event.organizer}
-              </p>
+              <p className="text-sm mb-4">Organizer: {event.organizer}</p>
 
               {/* Fee Badge */}
               <span
                 className={`inline-block px-3 py-1 rounded-full text-xs font-semibold mb-4 ${
                   event.fee === "Free"
-                    ? "bg-emerald-200 text-emerald-800 dark:bg-emerald-500/20 dark:text-emerald-300"
-                    : "bg-rose-200 text-rose-800 dark:bg-rose-500/20 dark:text-rose-300"
+                    ? "bg-white/30 text-white"
+                    : "bg-black/30 text-white"
                 }`}
               >
                 {event.fee}
@@ -75,8 +83,8 @@ export default function UpcomingEventsSlider() {
               {/* Button */}
               <Link
                 href={event.link}
-                className="block text-center mt-4 px-4 py-2 rounded-full font-semibold transition-all duration-300
-                bg-indigo-600 text-white hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600"
+                className="block text-center mt-4 px-4 py-2 rounded-full font-semibold
+                           bg-white text-black hover:bg-black hover:text-white transition-colors duration-300 shadow-md hover:shadow-lg"
               >
                 Join Now
               </Link>
@@ -84,6 +92,18 @@ export default function UpcomingEventsSlider() {
           ))}
         </div>
       </div>
+
+      {/* Simple Fade-Up Animation */}
+      <style jsx>{`
+        @keyframes fadeUp {
+          0% { opacity: 0; transform: translateY(20px); }
+          100% { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeUp {
+          opacity: 0;
+          animation: fadeUp 0.7s ease forwards;
+        }
+      `}</style>
     </section>
   );
 }

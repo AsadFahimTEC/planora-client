@@ -27,30 +27,36 @@ const HeroSection = ({ event = dummyEvent }: HeroSectionProps) => {
 
       {/* Content */}
       <div className="max-w-7xl mx-auto px-6 py-28 flex justify-center">
-        <div className="bg-white dark:bg-slate-800 rounded-3xl p-10 md:p-16 text-center max-w-3xl shadow-md border border-slate-300 dark:border-slate-700 transition-all duration-500 hover:-translate-y-2 hover:shadow-xl">
+        <div className="relative rounded-3xl max-w-3xl w-full">
+          {/* RGB Border Animation */}
+          <div className="absolute inset-0 rounded-3xl p-[2px] bg-gradient-to-r from-red-500 via-green-400 via-blue-500 to-pink-500 animate-rgb blur-md opacity-60"></div>
 
-          {/* Title */}
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 tracking-tight text-slate-800 dark:text-white animate-fadeIn">
-            {event.title}
-          </h1>
+          {/* Card Content */}
+          <div className="relative bg-white dark:bg-slate-800 rounded-3xl p-10 md:p-16 text-center shadow-md border border-slate-300 dark:border-slate-700 transition-all duration-500 hover:-translate-y-2 hover:shadow-xl">
+            
+            {/* Title */}
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 tracking-tight text-slate-800 dark:text-white animate-fadeIn">
+              {event.title}
+            </h1>
 
-          {/* Date */}
-          <p className="text-indigo-600 dark:text-indigo-400 font-semibold mb-6 text-lg md:text-xl animate-fadeIn delay-200">
-            {event.date}
-          </p>
+            {/* Date */}
+            <p className="text-indigo-600 dark:text-indigo-400 font-semibold mb-6 text-lg md:text-xl animate-fadeIn delay-200">
+              {event.date}
+            </p>
 
-          {/* Description */}
-          <p className="text-slate-600 dark:text-slate-400 mb-8 text-md md:text-lg leading-relaxed animate-fadeIn delay-400">
-            {event.description}
-          </p>
+            {/* Description */}
+            <p className="text-slate-600 dark:text-slate-400 mb-8 text-md md:text-lg leading-relaxed animate-fadeIn delay-400">
+              {event.description}
+            </p>
 
-          {/* Button */}
-          <Link
-            href={event.link}
-            className="inline-block bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 px-8 rounded-full transition-all duration-300 shadow-md hover:shadow-lg animate-fadeIn delay-600"
-          >
-            Join Now
-          </Link>
+            {/* Button */}
+            <Link
+              href={event.link}
+              className="inline-block bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 px-8 rounded-full transition-all duration-300 shadow-md hover:shadow-lg animate-fadeIn delay-600"
+            >
+              Join Now
+            </Link>
+          </div>
         </div>
       </div>
 
@@ -71,6 +77,17 @@ const HeroSection = ({ event = dummyEvent }: HeroSectionProps) => {
             opacity: 1;
             transform: translateY(0);
           }
+        }
+
+        @keyframes rgbAnimation {
+          0% { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
+          100% { background-position: 0% 50%; }
+        }
+
+        .animate-rgb {
+          background-size: 400% 400%;
+          animation: rgbAnimation 6s ease infinite;
         }
       `}</style>
     </section>
