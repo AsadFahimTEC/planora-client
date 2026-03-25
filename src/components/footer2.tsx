@@ -65,8 +65,8 @@ const Footer = ({
   ],
   copyright = "© 2026 Planora 📅 All rights reserved.",
   bottomLinks = [
-    { text: "Terms and Conditions", url: "#" },
-    { text: "Privacy Policy", url: "#" },
+    { text: "Terms and Conditions", url: "/terms" },
+    { text: "Privacy Policy", url: "/privacy" },
   ],
 }: FooterProps) => {
   return (
