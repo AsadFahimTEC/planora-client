@@ -1,197 +1,3 @@
-// "use client";
-
-// import { useState } from "react";
-// import { Plus, Pencil, Trash, Users } from "lucide-react";
-// import { cn } from "@/lib/utils";
-// import Link from "next/link";
-
-// // Event interface
-// interface EventCard {
-//   id: number;
-//   title: string;
-//   date: string;
-//   time: string;
-//   venue: string;
-//   description: string;
-//   organizer: string;
-//   fee: "Free" | "Paid";
-//   type: "Public" | "Private";
-//   link: string;
-//   participants?: string[];
-//   approvals?: string[];
-// }
-
-// // Initial dummy events
-// const initialEvents: EventCard[] = [
-//   {
-//     id: 1,
-//     title: "Music Festival",
-//     date: "Apr 10, 2026",
-//     time: "6:00 PM",
-//     venue: "City Park",
-//     description: "Annual music festival",
-//     organizer: "ABC Corp",
-//     fee: "Free",
-//     type: "Public",
-//     link: "/events/1",
-//     participants: ["Alice", "Bob"],
-//     approvals: ["Alice"],
-//   },
-//   {
-//     id: 2,
-//     title: "Tech Meetup",
-//     date: "Apr 12, 2026",
-//     time: "5:00 PM",
-//     venue: "Tech Hub",
-//     description: "Networking & talks",
-//     organizer: "Techies",
-//     fee: "Paid",
-//     type: "Public",
-//     link: "/events/2",
-//     participants: ["Charlie"],
-//     approvals: [],
-//   },
-// ];
-
-// export default function DashboardDetailsPage() {
-//   const [events, setEvents] = useState(initialEvents);
-
-//   // Create new event with a proper form prompt
-//   const handleCreate = () => {
-//     const title = prompt("Enter Title:") || "";
-//     if (!title) return;
-
-//     const date = prompt("Enter Date (e.g., Apr 20, 2026):") || "TBD";
-//     const time = prompt("Enter Time (e.g., 6:00 PM):") || "TBD";
-//     const venue = prompt("Enter Venue:") || "TBD";
-//     const description = prompt("Enter Description:") || "";
-//     const type = prompt("Type: Public or Private") === "Private" ? "Private" : "Public";
-//     const fee = prompt("Fee: Free or Paid") === "Paid" ? "Paid" : "Free";
-
-//     const newEvent: EventCard = {
-//       id: events.length + 1,
-//       title,
-//       date,
-//       time,
-//       venue,
-//       description,
-//       organizer: "You",
-//       type,
-//       fee,
-//       link: `/events/${events.length + 1}`,
-//       participants: [],
-//       approvals: [],
-//     };
-
-//     setEvents([newEvent, ...events]);
-//   };
-
-//   // Update event title
-//   const handleUpdate = (id: number) => {
-//     const newTitle = prompt("Enter new title:");
-//     if (!newTitle) return;
-
-//     setEvents(events.map(e => e.id === id ? { ...e, title: newTitle } : e));
-//   };
-
-//   // Delete event
-//   const handleDelete = (id: number) => {
-//     if (confirm("Are you sure you want to delete this event?")) {
-//       setEvents(events.filter(e => e.id !== id));
-//     }
-//   };
-
-//   return (
-//     <div className="p-6 max-w-7xl mx-auto">
-//       {/* Header */}
-//       <div className="flex flex-col md:flex-row justify-between items-center mb-6">
-//         <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-4 md:mb-0">
-//           Event Details
-//         </h1>
-//         <button
-//           onClick={handleCreate}
-//           className="flex items-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-full hover:bg-indigo-700 transition"
-//         >
-//           <Plus className="w-5 h-5" /> Create Event
-//         </button>
-//       </div>
-
-//       {/* Event Cards */}
-//       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-//         {events.map(event => (
-//           <div
-//             key={event.id}
-//             className="bg-slate-200/70 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-3xl p-6 shadow-md hover:shadow-xl transition-all duration-300 flex flex-col justify-between"
-//           >
-//             {/* Event Info */}
-//             <div>
-//               <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">{event.title}</h3>
-//               <p className="text-slate-700 dark:text-slate-400 mb-1">Date: {event.date}</p>
-//               <p className="text-slate-700 dark:text-slate-400 mb-1">Time: {event.time}</p>
-//               <p className="text-slate-700 dark:text-slate-400 mb-1">Venue: {event.venue}</p>
-//               <p className="text-slate-700 dark:text-slate-400 mb-2">Description: {event.description}</p>
-//               <p className="text-slate-700 dark:text-slate-400 mb-1">Organizer: {event.organizer}</p>
-
-//               <span
-//                 className={cn(
-//                   "inline-block px-3 py-1 text-xs font-semibold rounded-full mb-4",
-//                   event.fee === "Free"
-//                     ? "bg-emerald-200 text-emerald-800 dark:bg-emerald-500/20 dark:text-emerald-300"
-//                     : "bg-rose-200 text-rose-800 dark:bg-rose-500/20 dark:text-rose-300"
-//                 )}
-//               >
-//                 {event.fee} - {event.type}
-//               </span>
-
-//               {/* Participants */}
-//               <div className="mb-2">
-//                 <p className="font-semibold text-slate-800 dark:text-slate-300">Participants:</p>
-//                 <ul className="text-slate-700 dark:text-slate-400 text-sm">
-//                   {event.participants && event.participants.length > 0
-//                     ? event.participants.map((p, i) => <li key={i}>{p}</li>)
-//                     : <li>No participants yet</li>}
-//                 </ul>
-//               </div>
-
-//               {/* Approvals */}
-//               <div>
-//                 <p className="font-semibold text-slate-800 dark:text-slate-300">Approvals:</p>
-//                 <ul className="text-slate-700 dark:text-slate-400 text-sm">
-//                   {event.approvals && event.approvals.length > 0
-//                     ? event.approvals.map((a, i) => <li key={i}>{a}</li>)
-//                     : <li>Pending approvals</li>}
-//                 </ul>
-//               </div>
-//             </div>
-
-//             {/* Action Buttons */}
-//             <div className="mt-4 flex flex-wrap gap-2">
-//               <button
-//                 onClick={() => handleUpdate(event.id)}
-//                 className="flex items-center gap-1 px-3 py-2 bg-yellow-500 text-black rounded-full hover:bg-yellow-600 transition text-sm font-semibold"
-//               >
-//                 <Pencil className="w-4 h-4" /> Update
-//               </button>
-//               <button
-//                 onClick={() => handleDelete(event.id)}
-//                 className="flex items-center gap-1 px-3 py-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition text-sm font-semibold"
-//               >
-//                 <Trash className="w-4 h-4" /> Delete
-//               </button>
-//               <Link
-//                 href={event.link}
-//                 className="flex items-center gap-1 px-3 py-2 bg-indigo-600 text-white rounded-full hover:bg-indigo-700 transition text-sm font-semibold"
-//               >
-//                 <Users className="w-4 h-4" /> View / Manage
-//               </Link>
-//             </div>
-//           </div>
-//         ))}
-//       </div>
-//     </div>
-//   );
-// }
-
 "use client";
 
 import { useState } from "react";
@@ -297,6 +103,30 @@ export default function DashboardDetailsPage() {
       setEvents(events.filter(e => e.id !== id));
     }
   };
+
+  const handleShurjoPay = async (eventId: number) => {
+  try {
+    const res = await fetch("/api/shurjopay/initiate", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        amount: 500, // dynamic amount
+        customer_name: "Test User",
+        customer_email: "test@gmail.com",
+        customer_phone: "017XXXXXXXX",
+        event_id: eventId,
+      }),
+    });
+
+    const data = await res.json();
+
+    if (data.checkout_url) {
+      window.location.href = data.checkout_url;
+    }
+  } catch (err) {
+    alert("Payment initialization failed!");
+  }
+};
 
   return (
     <div className="p-4 md:p-6 max-w-7xl mx-auto">
