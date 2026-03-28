@@ -1,109 +1,70 @@
 "use client";
 
+import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 
-interface EventCard {
+interface Event {
   id: number;
   title: string;
   date: string;
   organizer: string;
-  fee: "Free" | "Paid";
-  link: string;
+  fee: string;
 }
 
-const dummyEvents: EventCard[] = [
-  { id: 1, title: "Music Festival", date: "Apr 10, 2026", organizer: "ABC Corp", fee: "Free", link: "/events/1" },
-  { id: 2, title: "Tech Meetup", date: "Apr 12, 2026", organizer: "Techies", fee: "Paid", link: "/events/2" },
-  { id: 3, title: "Art Expo", date: "Apr 15, 2026", organizer: "Creative Minds", fee: "Free", link: "/events/3" },
-  { id: 4, title: "Startup Pitch", date: "Apr 18, 2026", organizer: "InnovateX", fee: "Paid", link: "/events/4" },
-  { id: 5, title: "Cooking Workshop", date: "Apr 20, 2026", organizer: "Chef Club", fee: "Free", link: "/events/5" },
-  { id: 6, title: "Yoga Retreat", date: "Apr 22, 2026", organizer: "Healthy Life", fee: "Paid", link: "/events/6" },
-  { id: 7, title: "Photography Walk", date: "Apr 25, 2026", organizer: "Photo Pros", fee: "Free", link: "/events/7" },
-  { id: 8, title: "Dance Workshop", date: "Apr 28, 2026", organizer: "Dance Club", fee: "Paid", link: "/events/8" },
-  { id: 9, title: "Startup Seminar", date: "May 1, 2026", organizer: "BizHub", fee: "Free", link: "/events/9" },
-];
-
-const gradients = [
-  "bg-gradient-to-br from-indigo-400 to-purple-500",
-  "bg-gradient-to-br from-pink-400 to-red-500",
-  "bg-gradient-to-br from-green-400 to-teal-500",
-  "bg-gradient-to-br from-yellow-400 to-orange-500",
-  "bg-gradient-to-br from-cyan-400 to-blue-500",
-  "bg-gradient-to-br from-purple-400 to-pink-500",
-  "bg-gradient-to-br from-rose-400 to-fuchsia-500",
-  "bg-gradient-to-br from-lime-400 to-emerald-500",
-  "bg-gradient-to-br from-indigo-300 to-sky-500",
-];
+const fetchEvents = async (): Promise<Event[]> => {
+  const res = await fetch("http://localhost:5000/api/events");
+  if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+  return res.json();
+};
 
 export default function UpcomingEventsSlider() {
-  return (
-    <section className="py-20 bg-slate-100 dark:bg-slate-900 transition-colors duration-500">
-      <div className="max-w-7xl mx-auto px-6">
+  const { data, error, isLoading, refetch } = useQuery({
+    queryKey: ["events"],
+    queryFn: fetchEvents,
+  });
 
-        {/* Section Heading */}
-        <div className="text-center mb-14">
-          <h2 className="text-4xl md:text-5xl font-extrabold text-slate-900 dark:text-white">
-            Upcoming Events
-          </h2>
-          <p className="mt-4 text-lg text-slate-600 dark:text-slate-400">
-            Discover and join exciting events happening soon
-          </p>
-        </div>
+  if (isLoading) return <p className="text-center py-10">Loading events...</p>;
 
-        {/* Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-          {dummyEvents.map((event, idx) => (
-            <div
-              key={event.id}
-              className={`rounded-3xl p-6 shadow-md border border-slate-300 dark:border-slate-700
-                          text-white transition-transform duration-500 transform hover:-translate-y-2 hover:shadow-xl
-                          ${gradients[idx % gradients.length]} animate-fadeUp`}
-              style={{ animationDelay: `${idx * 0.15}s` }}
-            >
-              {/* Title */}
-              <h3 className="text-2xl font-bold mb-2">{event.title}</h3>
-
-              {/* Date */}
-              <p className="text-sm mb-1">{event.date}</p>
-
-              {/* Organizer */}
-              <p className="text-sm mb-4">Organizer: {event.organizer}</p>
-
-              {/* Fee Badge */}
-              <span
-                className={`inline-block px-3 py-1 rounded-full text-xs font-semibold mb-4 ${
-                  event.fee === "Free"
-                    ? "bg-white/30 text-white"
-                    : "bg-black/30 text-white"
-                }`}
-              >
-                {event.fee}
-              </span>
-
-              {/* Button */}
-              <Link
-                href={event.link}
-                className="block text-center mt-4 px-4 py-2 rounded-full font-semibold
-                           bg-white text-black hover:bg-black hover:text-white transition-colors duration-300 shadow-md hover:shadow-lg"
-              >
-                Join Now
-              </Link>
-            </div>
-          ))}
-        </div>
+  if (error instanceof Error)
+    return (
+      <div className="text-center py-10">
+        <p className="text-red-500 mb-2">Error loading events: {error.message}</p>
+        <button
+          onClick={() => refetch()}
+          className="px-4 py-2 bg-indigo-600 text-white rounded-full hover:bg-indigo-700"
+        >
+          Retry
+        </button>
       </div>
+    );
 
-      {/* Simple Fade-Up Animation */}
-      <style jsx>{`
-        @keyframes fadeUp {
-          0% { opacity: 0; transform: translateY(20px); }
-          100% { opacity: 1; transform: translateY(0); }
-        }
-        .animate-fadeUp {
-          opacity: 0;
-          animation: fadeUp 0.7s ease forwards;
-        }
-      `}</style>
+  if (!data || data.length === 0)
+    return <p className="text-center py-10">No upcoming events found.</p>;
+
+  return (
+    <section className="py-10 max-w-7xl mx-auto px-4">
+      <h2 className="text-3xl font-bold mb-6 text-center">Upcoming Events</h2>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        {data.map((event) => (
+          <div
+            key={event.id}
+            className="p-6 rounded-2xl shadow-md border border-gray-300 dark:border-gray-700 bg-gradient-to-br from-indigo-400 to-purple-500 text-white"
+          >
+            <h3 className="text-xl font-bold mb-2">{event.title}</h3>
+            <p className="mb-1">Date: {event.date}</p>
+            <p className="mb-1">Organizer: {event.organizer}</p>
+            <span className="inline-block px-3 py-1 rounded-full bg-white/30 text-white text-sm">
+              {event.fee}
+            </span>
+            <Link
+              href="#"
+              className="block mt-4 text-center px-4 py-2 bg-white text-black rounded-full hover:bg-black hover:text-white transition"
+            >
+              Join Now
+            </Link>
+          </div>
+        ))}
+      </div>
     </section>
   );
 }
