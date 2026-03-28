@@ -11,6 +11,7 @@ interface Event {
   fee: string;
 }
 
+// Fetch function
 const fetchEvents = async (): Promise<Event[]> => {
   const res = await fetch("http://localhost:5000/api/events");
   if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
@@ -38,7 +39,7 @@ export default function UpcomingEventsSlider() {
       </div>
     );
 
-  if (!data || data.length === 0)
+  if (!data || !Array.isArray(data) || data.length === 0)
     return <p className="text-center py-10">No upcoming events found.</p>;
 
   return (
