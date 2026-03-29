@@ -1,7 +1,14 @@
 "use client";
 
-import { useState } from "react";
-import { Menu, X, Calendar, Inbox, Star, Settings as SettingsIcon } from "lucide-react";
+import { useState, useEffect } from "react";
+import {
+  Menu,
+  X,
+  Calendar,
+  Inbox,
+  Star,
+  Settings as SettingsIcon,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 
@@ -12,34 +19,23 @@ interface EventCard {
   organizer: string;
   fee: "Free" | "Paid";
   type: "Public" | "Private";
-  link: string;
 }
 
-const dummyEvents: EventCard[] = [
-  { id: 1, title: "Music Festival", date: "Apr 10, 2026", organizer: "ABC Corp", fee: "Free", type: "Public", link: "/events/1" },
-  { id: 2, title: "Tech Meetup", date: "Apr 12, 2026", organizer: "Techies", fee: "Paid", type: "Public", link: "/events/2" },
-  { id: 3, title: "Art Expo", date: "Apr 15, 2026", organizer: "Creative Minds", fee: "Free", type: "Private", link: "/events/3" },
-  { id: 4, title: "Startup Pitch", date: "Apr 18, 2026", organizer: "InnovateX", fee: "Paid", type: "Private", link: "/events/4" },
-  { id: 5, title: "Cooking Workshop", date: "Apr 20, 2026", organizer: "Chef Club", fee: "Free", type: "Public", link: "/events/5" },
-  { id: 6, title: "Yoga Retreat", date: "Apr 22, 2026", organizer: "Healthy Life", fee: "Paid", type: "Private", link: "/events/6" },
-  { id: 7, title: "Photography Walk", date: "Apr 25, 2026", organizer: "Photo Pros", fee: "Free", type: "Public", link: "/events/7" },
-  { id: 8, title: "Dance Workshop", date: "Apr 28, 2026", organizer: "Dance Club", fee: "Paid", type: "Private", link: "/events/8" },
-  { id: 9, title: "Startup Seminar", date: "May 1, 2026", organizer: "BizHub", fee: "Free", type: "Public", link: "/events/9" },
-];
-
-const dummyInvites = [
-  { id: 1, title: "Startup Pitch", date: "Apr 18, 2026", organizer: "InnovateX" },
-  { id: 2, title: "Yoga Retreat", date: "Apr 22, 2026", organizer: "Healthy Life" },
-];
-
-const dummyReviews = [
-  { id: 1, title: "Photography Walk", rating: 4 },
-  { id: 2, title: "Cooking Workshop", rating: 5 },
-];
+interface InvitationCard {
+  id: number;
+  title: string;
+  date: string;
+  organizer: string;
+}
 
 export default function DashboardPage() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [activeSection, setActiveSection] = useState("My Events");
+
+  const [events, setEvents] = useState<EventCard[]>([]);
+  const [invitations, setInvitations] = useState<InvitationCard[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const sections = [
     { title: "My Events", icon: <Calendar className="h-5 w-5" /> },
@@ -48,7 +44,79 @@ export default function DashboardPage() {
     { title: "Settings", icon: <SettingsIcon className="h-5 w-5" /> },
   ];
 
-  // Render dynamic action buttons with Link to event details
+  // ✅ Fetch events and invitations from backend
+  useEffect(() => {
+    const fetchAllData = async () => {
+      try {
+        setLoading(true);
+
+        const res = await fetch("http://localhost:5000/api/events", {
+          credentials: "include",
+        });
+
+        const result = await res.json();
+
+        // ✅ Fix: detect correct array source
+        const eventsArray = Array.isArray(result)
+          ? result
+          : Array.isArray(result.data)
+            ? result.data
+            : Array.isArray(result.events)
+              ? result.events
+              : Array.isArray(result.data?.events)
+                ? result.data.events
+                : [];
+
+        // ❗ Debug (very important)
+        console.log("API Response:", result);
+        console.log("Events Array:", eventsArray);
+
+        // ✅ Now map safely
+        const formatted = eventsArray.map((event: any) => ({
+          id: event.id,
+          title: event.title,
+          date: event.date
+            ? new Date(event.date).toLocaleDateString()
+            : "Invalid Date",
+          organizer: event.organizer?.name || "Unknown",
+          fee: event.fee === 0 ? "Free" : "Paid",
+          type: event.isPublic ? "Public" : "Private",
+        }));
+
+        setEvents(formatted);
+
+        /* INVITATIONS API */
+        const inviteRes = await fetch("http://localhost:5000/api/invitations", {
+          credentials: "include",
+        });
+        const inviteData = await inviteRes.json();
+
+        const inviteArray =
+          Array.isArray(inviteData) ? inviteData :
+          Array.isArray(inviteData.data) ? inviteData.data :
+          [];
+
+        const formattedInvites = inviteArray.map((i: any) => ({
+          id: i.id,
+          title: i.event?.title || "Untitled",
+          date: i.event?.date
+            ? new Date(i.event.date).toLocaleDateString()
+            : "N/A",
+          organizer: i.event?.organizer?.name || "Unknown",
+        }));
+
+        setInvitations(formattedInvites);
+      } catch (err: any) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAllData();
+  }, []);
+
+  // ✅ Action Button Logic
   const renderActionButton = (event: EventCard) => {
     let buttonText = "";
     let buttonClass = "";
@@ -56,21 +124,18 @@ export default function DashboardPage() {
     if (event.type === "Public" && event.fee === "Free") {
       buttonText = "Join";
       buttonClass = "bg-emerald-500 text-white hover:bg-emerald-600";
-    }
-    if (event.type === "Public" && event.fee === "Paid") {
+    } else if (event.type === "Public" && event.fee === "Paid") {
       buttonText = "Pay & Join";
       buttonClass = "bg-indigo-600 text-white hover:bg-indigo-700";
-    }
-    if (event.type === "Private" && event.fee === "Free") {
-      buttonText = "Request to Join";
+    } else if (event.type === "Private" && event.fee === "Free") {
+      buttonText = "Request";
       buttonClass = "bg-yellow-500 text-black hover:bg-yellow-600";
-    }
-    if (event.type === "Private" && event.fee === "Paid") {
+    } else {
       buttonText = "Pay & Request";
       buttonClass = "bg-red-500 text-white hover:bg-red-600";
     }
 
-   return (
+    return (
       <Link
         href={`/dashboard/${event.id}`}
         className={`px-4 py-2 rounded-full font-semibold transition ${buttonClass}`}
@@ -80,128 +145,84 @@ export default function DashboardPage() {
     );
   };
 
-
   return (
-    <div className="flex h-screen bg-slate-100 dark:bg-slate-900 transition-colors duration-500">
+    <div className="flex min-h-screen flex-col lg:flex-row bg-slate-100 dark:bg-slate-900">
       {/* Sidebar */}
       <aside
         className={cn(
-          "bg-gradient-to-b from-indigo-500 via-purple-500 to-pink-500 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 text-white w-64 flex-shrink-0 transition-transform duration-300 fixed lg:relative h-full z-50",
-          sidebarOpen ? "translate-x-0" : "-translate-x-64"
+          "bg-gradient-to-b from-indigo-500 to-pink-500 text-white w-64 fixed lg:relative h-full z-50 transition-transform",
+          sidebarOpen ? "translate-x-0" : "-translate-x-64",
         )}
       >
-        <div className="flex items-center justify-between px-6 py-6 border-b border-white/20">
-          <h1 className="text-2xl font-extrabold">Dashboard</h1>
-          <button className="lg:hidden text-white" onClick={() => setSidebarOpen(false)}>
-            <X className="h-6 w-6" />
+        <div className="flex justify-between p-6">
+          <h1 className="text-xl font-bold">Dashboard</h1>
+          <button onClick={() => setSidebarOpen(false)} className="lg:hidden">
+            <X />
           </button>
         </div>
 
-        <nav className="mt-6 flex flex-col gap-2 px-4">
-          {sections.map((section) => (
-            <button
-              key={section.title}
-              onClick={() => setActiveSection(section.title)}
-              className={cn(
-                "flex items-center gap-3 px-4 py-3 rounded-lg font-semibold transition-all duration-300",
-                activeSection === section.title ? "bg-white/20 shadow-lg" : "hover:bg-white/10"
-              )}
-            >
-              {section.icon}
-              {section.title}
-            </button>
-          ))}
-        </nav>
+        {sections.map((section) => (
+          <button
+            key={section.title}
+            onClick={() => setActiveSection(section.title)}
+            className={cn(
+              "block w-full text-left px-6 py-3",
+              activeSection === section.title && "bg-white/20",
+            )}
+          >
+            {section.title}
+          </button>
+        ))}
       </aside>
 
-      {/* Mobile overlay */}
-      {sidebarOpen && <div className="fixed inset-0 bg-black/40 z-40 lg:hidden" onClick={() => setSidebarOpen(false)}></div>}
-
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col">
-        {/* Mobile top bar */}
-        <header className="lg:hidden flex items-center justify-between px-6 py-4 bg-slate-200 dark:bg-slate-800">
-          <button className="text-slate-900 dark:text-white" onClick={() => setSidebarOpen(true)}>
-            <Menu className="h-6 w-6" />
+      {/* Main */}
+      <div className="flex-1">
+        <header className="lg:hidden flex justify-between p-4">
+          <button onClick={() => setSidebarOpen(true)}>
+            <Menu />
           </button>
-          <h2 className="text-xl font-bold text-slate-900 dark:text-white">{activeSection}</h2>
-          <div></div>
+          <h2>{activeSection}</h2>
         </header>
 
-        <main className="flex-1 overflow-auto p-6">
-          <h2 className="text-3xl font-bold text-slate-900 dark:text-white mb-6">{activeSection}</h2>
+        <main className="p-6">
+          <h2 className="text-2xl font-bold mb-6">{activeSection}</h2>
 
-          {/* My Events */}
-          {activeSection === "My Events" && (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {dummyEvents.map((event) => (
+          {/* ✅ Loading */}
+          {loading && <p>Loading events...</p>}
+
+          {/* ❌ Error */}
+          {error && <p className="text-red-500">{error}</p>}
+
+          {/* ✅ Events */}
+          {!loading && !error && activeSection === "My Events" && (
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {events.map((event) => (
                 <div
                   key={event.id}
-                  className="bg-slate-200/70 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-3xl p-6 shadow-md hover:shadow-xl transition-all duration-300 flex flex-col justify-between"
+                  className="bg-white dark:bg-slate-800 p-5 rounded-xl shadow flex flex-col justify-between"
                 >
                   <div>
-                    <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">{event.title}</h3>
-                    <p className="text-slate-700 dark:text-slate-400 mb-1">Date: {event.date}</p>
-                    <p className="text-slate-700 dark:text-slate-400 mb-2">Organizer: {event.organizer}</p>
-                    <span
-                      className={cn(
-                        "inline-block px-3 py-1 text-xs font-semibold rounded-full mb-4",
-                        event.fee === "Free"
-                          ? "bg-emerald-200 text-emerald-800 dark:bg-emerald-500/20 dark:text-emerald-300"
-                          : "bg-rose-200 text-rose-800 dark:bg-rose-500/20 dark:text-rose-300"
-                      )}
-                    >
-                      {event.fee}
-                    </span>
+                    <h3 className="text-lg font-bold">{event.title}</h3>
+                    <p>Date: {event.date}</p>
+                    <p>Organizer: {event.organizer}</p>
+                    <span className="text-sm">{event.fee}</span>
                   </div>
-                  <div>{renderActionButton(event)}</div>
+
+                  <div className="mt-4">{renderActionButton(event)}</div>
                 </div>
               ))}
             </div>
           )}
-
-          {/* Pending Invitations */}
-          {activeSection === "Pending Invitations" && (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {dummyInvites.map((invite) => (
-                <div
-                  key={invite.id}
-                  className="bg-slate-200/70 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-3xl p-6 shadow-md hover:shadow-xl transition-all duration-300"
-                >
-                  <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">{invite.title}</h3>
-                  <p className="text-slate-700 dark:text-slate-400">Date: {invite.date}</p>
-                  <p className="text-slate-700 dark:text-slate-400">Organizer: {invite.organizer}</p>
+            {/* INVITATIONS */}
+          {activeSection === "Pending Invitations" && !loading && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {invitations.map((invite) => (
+                <div key={invite.id} className="bg-white p-4 rounded-xl shadow">
+                  <h3 className="font-bold">{invite.title}</h3>
+                  <p>{invite.date}</p>
+                  <p>{invite.organizer}</p>
                 </div>
               ))}
-            </div>
-          )}
-
-          {/* My Reviews */}
-          {activeSection === "My Reviews" && (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {dummyReviews.map((review) => (
-                <div
-                  key={review.id}
-                  className="bg-slate-200/70 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-3xl p-6 shadow-md hover:shadow-xl transition-all duration-300"
-                >
-                  <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">{review.title}</h3>
-                  <p className="text-slate-700 dark:text-slate-400">Your Rating: {"⭐".repeat(review.rating)}</p>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {/* Settings */}
-          {activeSection === "Settings" && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="bg-slate-200/70 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-3xl p-6 shadow-md hover:shadow-xl transition-all duration-300">
-                <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">Account Settings</h3>
-                <p className="text-slate-700 dark:text-slate-400">Manage your account preferences, email, and password.</p>
-              </div>
-              <div className="bg-slate-200/70 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-3xl p-6 shadow-md hover:shadow-xl transition-all duration-300">
-                <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">Notification Settings</h3>
-                <p className="text-slate-700 dark:text-slate-400">Enable or disable notifications for upcoming events.</p>
-              </div>
             </div>
           )}
         </main>
