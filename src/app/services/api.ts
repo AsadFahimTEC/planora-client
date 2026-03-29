@@ -1,4 +1,4 @@
-export const API_BASE = "https://skillbridge-server-kappa.vercel.app/api";
+export const API_BASE = "http://localhost:5000/api";
 
 export const fetcher = async (url: string, options: RequestInit = {}
 ) => {
