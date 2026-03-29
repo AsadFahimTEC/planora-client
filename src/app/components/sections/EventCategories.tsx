@@ -36,16 +36,35 @@ export default function EventDashboard() {
     const fetchEvents = async () => {
       try {
         setLoading(true);
-        const res = await fetch("http://localhost:5000/api/events");
-        if (!res.ok) throw new Error("Failed to fetch events");
-        const data: EventCard[] = await res.json();
+        setError("");
+
+        // ✅ Use token if your backend requires auth
+        const token = localStorage.getItem("token");
+
+        const res = await fetch("http://localhost:5000/api/events", {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: token ? `Bearer ${token}` : "",
+          },
+          credentials: "include", // if backend uses cookies
+        });
+
+        const result = await res.json();
+
+        if (!res.ok) {
+          throw new Error(result.message || "Failed to fetch events");
+        }
+
+        const data: EventCard[] = result.data || result;
+
         setEvents(data);
 
         // Generate dynamic filters
         const dynamicFilters = ["All"];
         data.forEach((event) => {
           const filterName = `${event.type} ${event.fee}`;
-          if (!dynamicFilters.includes(filterName)) dynamicFilters.push(filterName);
+          if (!dynamicFilters.includes(filterName))
+            dynamicFilters.push(filterName);
         });
         setFilters(dynamicFilters);
       } catch (err: any) {
@@ -96,9 +115,13 @@ export default function EventDashboard() {
 
         {/* Loading / Error */}
         {loading && (
-          <p className="text-center text-lg text-slate-600 dark:text-slate-400">Loading events...</p>
+          <p className="text-center text-lg text-slate-600 dark:text-slate-400">
+            Loading events...
+          </p>
         )}
-        {error && <p className="text-center text-red-500">{error}</p>}
+        {error && (
+          <p className="text-center text-red-500 text-lg mb-4">{error}</p>
+        )}
 
         {/* Event Cards */}
         {!loading && !error && (
@@ -106,6 +129,7 @@ export default function EventDashboard() {
             {filteredEvents.length > 0 ? (
               filteredEvents.map((event, idx) => {
                 const gradient = gradients[idx % gradients.length];
+                const eventDateTime = new Date(`${event.date} ${event.time}`);
                 return (
                   <div
                     key={event.id}
@@ -123,17 +147,32 @@ export default function EventDashboard() {
                       </span>
                     </div>
 
+                    {/* Format Date & Time dynamically */}
                     <p className="text-sm mb-2">
-                      <span className="font-semibold">Date:</span> {event.date}
+                      <span className="font-semibold">Date:</span>{" "}
+                      {eventDateTime.toLocaleDateString("en-BD", {
+                        weekday: "short",
+                        day: "numeric",
+                        month: "short",
+                        year: "numeric",
+                      })}
                     </p>
                     <p className="text-sm mb-2">
-                      <span className="font-semibold">Time:</span> {event.time}
+                      <span className="font-semibold">Time:</span>{" "}
+                      {eventDateTime.toLocaleTimeString("en-BD", {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                        hour12: true,
+                      })}
                     </p>
                     <p className="text-sm mb-2">
-                      <span className="font-semibold">Venue:</span> {event.venue}
+                      <span className="font-semibold">Venue:</span>{" "}
+                      {event.venue}
                     </p>
 
-                    <p className="text-sm leading-relaxed">{event.description}</p>
+                    <p className="text-sm leading-relaxed">
+                      {event.description}
+                    </p>
                   </div>
                 );
               })
