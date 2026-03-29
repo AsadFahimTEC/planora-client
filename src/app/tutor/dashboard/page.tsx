@@ -1,9 +1,7 @@
 "use client";
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
-
 import { useEffect, useState } from "react";
-import { getTutorDashboard } from "@/app/services/tutor.service";
+import { getTutorDashboard } from "@/app/services/tutor.service"; // Your API service
 import { useSession } from "@/hooks/useSession";
 
 interface TutorDashboard {
@@ -24,7 +22,8 @@ export default function TutorDashboardPage() {
 
     const fetchDashboard = async () => {
       try {
-        const data = await getTutorDashboard(user.id);
+        setLoading(true);
+        const data = await getTutorDashboard(user.id); // Fetch from API
         setDashboard(data);
       } catch (err: any) {
         setError(err.message || "Failed to load dashboard");
@@ -36,39 +35,45 @@ export default function TutorDashboardPage() {
     fetchDashboard();
   }, [user?.id]);
 
+  // Show loading spinner while fetching session or dashboard
   if (sessionLoading || loading) {
-    return <p className="p-6 text-gray-500">Loading dashboard...</p>;
+    return (
+      <div className="flex justify-center items-center min-h-[50vh]">
+        <div className="w-16 h-16 border-4 border-indigo-500 border-dashed rounded-full animate-spin"></div>
+      </div>
+    );
   }
 
   if (error) {
-    return <p className="p-6 text-red-500">{error}</p>;
+    return <p className="p-6 text-red-500 text-center">{error}</p>;
   }
 
   if (!dashboard) {
-    return <p className="p-6 text-gray-500">No dashboard data</p>;
+    return <p className="p-6 text-gray-500 text-center">No dashboard data available</p>;
   }
 
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold mb-4">Tutor Dashboard</h1>
+    <div className="p-6 max-w-4xl mx-auto">
+      <h1 className="text-3xl md:text-4xl font-bold mb-6 text-center">Tutor Dashboard</h1>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="border rounded p-4">
-          <p className="text-sm text-gray-500">Total Sessions</p>
-          <p className="text-2xl font-bold">{dashboard.totalSessions}</p>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {/* Total Sessions */}
+        <div className="bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-2xl p-6 shadow-md hover:shadow-lg transition">
+          <p className="text-sm text-gray-500 dark:text-gray-400">Total Sessions</p>
+          <p className="text-3xl font-bold mt-2">{dashboard.totalSessions}</p>
         </div>
 
-        <div className="border rounded p-4">
-          <p className="text-sm text-gray-500">Total Students</p>
-          <p className="text-2xl font-bold">{dashboard.totalStudents}</p>
+        {/* Total Students */}
+        <div className="bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-2xl p-6 shadow-md hover:shadow-lg transition">
+          <p className="text-sm text-gray-500 dark:text-gray-400">Total Students</p>
+          <p className="text-3xl font-bold mt-2">{dashboard.totalStudents}</p>
         </div>
 
+        {/* Total Earnings */}
         {dashboard.totalEarnings !== undefined && (
-          <div className="border rounded p-4">
-            <p className="text-sm text-gray-500">Total Earnings</p>
-            <p className="text-2xl font-bold">
-              ৳{dashboard.totalEarnings}
-            </p>
+          <div className="bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-2xl p-6 shadow-md hover:shadow-lg transition">
+            <p className="text-sm text-gray-500 dark:text-gray-400">Total Earnings</p>
+            <p className="text-3xl font-bold mt-2">৳{dashboard.totalEarnings}</p>
           </div>
         )}
       </div>

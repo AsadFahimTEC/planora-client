@@ -161,7 +161,7 @@ export default function EventDetailsPage() {
             <h2 className="text-2xl font-bold mb-2">Event Description</h2>
             <p>{event.description || "No description provided for this event."}</p>
           </div>
-Join
+
           <div className="flex justify-center">{getActionButton()}</div>
         </div>
       </div>

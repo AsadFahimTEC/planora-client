@@ -1,37 +1,60 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 
 interface EventCard {
-  id: number;
+  id: string;
   title: string;
-  date: string;
+  date?: string;
   organizer: string;
   fee: "Free" | "Paid";
   type: "Public" | "Private";
-  link: string;
+  link?: string;
 }
-
-const dummyEvents: EventCard[] = [
-  { id: 1, title: "Music Festival", date: "Apr 10, 2026", organizer: "ABC Corp", fee: "Free", type: "Public", link: "/events/1" },
-  { id: 2, title: "Tech Meetup", date: "Apr 12, 2026", organizer: "Techies", fee: "Paid", type: "Public", link: "/events/2" },
-  { id: 3, title: "Art Expo", date: "Apr 15, 2026", organizer: "Creative Minds", fee: "Free", type: "Private", link: "/events/3" },
-  { id: 4, title: "Startup Pitch", date: "Apr 18, 2026", organizer: "InnovateX", fee: "Paid", type: "Private", link: "/events/4" },
-  { id: 5, title: "Cooking Workshop", date: "Apr 20, 2026", organizer: "Chef Club", fee: "Free", type: "Public", link: "/events/5" },
-  { id: 6, title: "Yoga Retreat", date: "Apr 22, 2026", organizer: "Healthy Life", fee: "Paid", type: "Private", link: "/events/6" },
-  { id: 7, title: "Photography Walk", date: "Apr 25, 2026", organizer: "Photo Pros", fee: "Free", type: "Public", link: "/events/7" },
-  { id: 8, title: "Dance Workshop", date: "Apr 28, 2026", organizer: "Dance Club", fee: "Paid", type: "Private", link: "/events/8" },
-  { id: 9, title: "Startup Seminar", date: "May 1, 2026", organizer: "BizHub", fee: "Free", type: "Public", link: "/events/9" },
-];
 
 const filters = ["All", "Public Free", "Public Paid", "Private Free", "Private Paid"];
 
 export default function EventsPage() {
+  const [events, setEvents] = useState<EventCard[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
   const [search, setSearch] = useState("");
-  const [activeFilter, setActiveFilter] = useState<string>("All");
+  const [activeFilter, setActiveFilter] = useState("All");
 
-  const filteredEvents = dummyEvents.filter((event) => {
+  // Fetch events from API
+  useEffect(() => {
+    const fetchEvents = async () => {
+      try {
+        setLoading(true);
+        setError("");
+
+        const token = localStorage.getItem("token"); // if using auth
+        const res = await fetch("http://localhost:5000/api/events", {
+          headers: {
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+          credentials: "include",
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) throw new Error(data.message || "Failed to fetch events");
+
+        setEvents(data.data || data); // adjust based on API response
+      } catch (err: any) {
+        setError(err.message || "Something went wrong");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchEvents();
+  }, []);
+
+  // Filtered and searched events
+  const filteredEvents = events.filter((event) => {
     const matchesSearch =
       event.title.toLowerCase().includes(search.toLowerCase()) ||
       event.organizer.toLowerCase().includes(search.toLowerCase());
@@ -41,6 +64,35 @@ export default function EventsPage() {
     const [type, fee] = activeFilter.split(" ");
     return matchesSearch && event.type === type && event.fee === fee;
   });
+
+  // Format date safely
+  const formatDate = (date?: string) => {
+    if (!date) return "Date not available";
+    const d = new Date(date);
+    if (isNaN(d.getTime())) return "Invalid date";
+    return d.toLocaleDateString("en-US", {
+      weekday: "short",
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    });
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="w-16 h-16 border-4 border-indigo-500 border-dashed rounded-full animate-spin"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <section className="min-h-screen flex items-center justify-center">
+        <p className="text-red-500 text-lg">{error}</p>
+      </section>
+    );
+  }
 
   return (
     <section className="py-16 bg-slate-100 dark:bg-slate-900 transition-colors duration-500 min-h-screen">
@@ -95,7 +147,7 @@ export default function EventsPage() {
                 <h3 className="text-2xl font-bold mb-2 text-slate-900 dark:text-white">
                   {event.title}
                 </h3>
-                <p className="text-sm text-slate-600 dark:text-slate-400 mb-1">{event.date}</p>
+                <p className="text-sm text-slate-600 dark:text-slate-400 mb-1">{formatDate(event.date)}</p>
                 <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">
                   Organizer: {event.organizer}
                 </p>
@@ -111,7 +163,7 @@ export default function EventsPage() {
                 </span>
 
                 <Link
-                  href={event.link}
+                  href={event.link || `/events/${event.id}`}
                   className="block text-center mt-4 px-4 py-2 rounded-full font-semibold transition-all duration-300
                     bg-indigo-600 text-white hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600"
                 >
