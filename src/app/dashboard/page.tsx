@@ -60,6 +60,28 @@ export default function DashboardPage() {
 
   const [deletingId, setDeletingId] = useState<number | null>(null);
 
+  const [invoiceOpen, setInvoiceOpen] = useState(false);
+  const [invoiceData, setInvoiceData] = useState<any>(null);
+
+  // ✅ This useEffect goes here
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+
+    if (params.get("payment") === "success") {
+      toast.success("Payment successful!");
+
+      // Dummy invoice data
+      setInvoiceData({
+        transactionId: "TXN123456",
+        amount: 500,
+        date: new Date().toLocaleString(),
+        status: "Paid",
+      });
+
+      setInvoiceOpen(true);
+    }
+  }, []);
+
   const sections = [
     { title: "My Events", icon: <Calendar className="h-5 w-5" /> },
     { title: "Pending Invitations", icon: <Inbox className="h-5 w-5" /> },
@@ -153,6 +175,14 @@ export default function DashboardPage() {
 
   // -------------------- Action Buttons --------------------
   const renderActionButton = (event: EventCard) => {
+    const handleClick = () => {
+      if (event.fee === 0) {
+        handleFreeJoin(event.id, event.type); // ✅ dynamically passes event.id & type
+      } else {
+        handlePayment(event);
+      }
+    };
+
     const buttonText =
       event.type === "Public"
         ? event.fee === 0
@@ -162,24 +192,10 @@ export default function DashboardPage() {
           ? "Request"
           : "Pay & Request";
 
-    const buttonClass =
-      event.type === "Public"
-        ? event.fee === 0
-          ? "bg-emerald-500 text-white hover:bg-emerald-600"
-          : "bg-indigo-600 text-white hover:bg-indigo-700"
-        : event.fee === 0
-          ? "bg-yellow-500 text-black hover:bg-yellow-600"
-          : "bg-red-500 text-white hover:bg-red-600";
-
     return (
       <button
-        onClick={
-          () =>
-            event.fee > 0
-              ? handlePayment(event) // Paid → SSLCOMMERZ
-              : handleFreeJoin(event.id, event.type) // Free → Request/Join
-        }
-        className={`px-4 py-2 rounded-full font-semibold transition ${buttonClass}`}
+        onClick={handleClick}
+        className="px-4 py-2 rounded-full bg-indigo-600 text-white hover:bg-indigo-700"
       >
         {buttonText}
       </button>
@@ -281,34 +297,47 @@ export default function DashboardPage() {
   // -------------------- Make Payment --------------------
   const handlePayment = async (event: EventCard) => {
     try {
-      const res = await fetch("http://localhost:5000/api/payment/sslcommerz", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
+      const res = await fetch(
+        "http://localhost:5000/api/payments/sslcommerz", // ✅ matches your route
+        {
+          method: "POST",
+          credentials: "include", // 🔥 required for auth
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            eventId: event.id, // ✅ MUST send
+            amount: event.fee,
+          }),
         },
-        credentials: "include",
-        body: JSON.stringify({
-          eventId: event.id,
-          amount: event.fee,
-        }),
-      });
+      );
 
       const data = await res.json();
 
-      if (!res.ok) throw new Error(data.message || "Payment initiation failed");
+      if (!res.ok) {
+        throw new Error(data.message || "Payment failed");
+      }
 
-      // Redirect user to SSLCOMMERZ payment page
-      window.location.href = data.GatewayPageURL;
+      if (data.GatewayPageURL) {
+        window.location.href = data.GatewayPageURL; // ✅ redirect
+      } else {
+        throw new Error("No payment URL returned");
+      }
     } catch (err: any) {
       toast.error(err.message || "Payment error");
     }
   };
 
+  // Called when user clicks the "Request" or "Pay & Request" button
+  // Inside DashboardPage component
   const handleFreeJoin = async (
     eventId: number,
     type: "Public" | "Private",
   ) => {
     try {
+      const event = events.find((e) => e.id === eventId); // 🔥 get the actual event object
+      if (!event) throw new Error("Event not found");
+
       const endpoint =
         type === "Public"
           ? `/api/events/${eventId}/join`
@@ -317,9 +346,13 @@ export default function DashboardPage() {
       const res = await fetch(`http://localhost:5000${endpoint}`, {
         method: "POST",
         credentials: "include",
+        headers: { "Content-Type": "application/json" },
       });
 
-      if (!res.ok) throw new Error("Action failed");
+      if (!res) throw new Error("Server not responding");
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || "Request failed");
 
       toast.success(
         type === "Public"
@@ -327,9 +360,18 @@ export default function DashboardPage() {
           : "Request sent successfully!",
       );
 
-      fetchData();
+      // ✅ Use real registration fee from API
+      setInvoiceData({
+        transactionId: `FREE-${eventId}-${Date.now()}`,
+        amount: event.fee, // 🔥 dynamic fee from API
+        date: new Date().toLocaleString(),
+        status: event.fee === 0 ? "Free" : "Paid",
+      });
+
+      setInvoiceOpen(true); // 🔥 open invoice modal
     } catch (err: any) {
-      toast.error(err.message);
+      console.error("Fetch error:", err);
+      toast.error(err.message || "Something went wrong");
     }
   };
 
@@ -599,6 +641,42 @@ export default function DashboardPage() {
           </div>
         )}
       </div>
+      {invoiceOpen && invoiceData && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl p-6 w-[400px] shadow-lg">
+            <h2 className="text-xl font-bold mb-4 text-center">
+              Payment Invoice
+            </h2>
+
+            <div className="space-y-2 text-sm">
+              <p>
+                <strong>Transaction ID:</strong> {invoiceData.transactionId}
+              </p>
+              <p>
+                <strong>Amount:</strong> ৳ {invoiceData.amount}
+              </p>
+              <p>
+                <strong>Date:</strong> {invoiceData.date}
+              </p>
+              <p>
+                <strong>Status:</strong>
+                <span className="text-green-600 font-semibold ml-1">
+                  {invoiceData.status}
+                </span>
+              </p>
+            </div>
+
+            <div className="flex justify-end mt-6">
+              <button
+                onClick={() => setInvoiceOpen(false)}
+                className="px-4 py-2 bg-indigo-600 text-white rounded"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
