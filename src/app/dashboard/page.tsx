@@ -58,6 +58,8 @@ export default function DashboardPage() {
   const [modalOpen, setModalOpen] = useState(false);
   const [editingEvent, setEditingEvent] = useState<EventCard | null>(null);
 
+  const [deletingId, setDeletingId] = useState<number | null>(null);
+
   const sections = [
     { title: "My Events", icon: <Calendar className="h-5 w-5" /> },
     { title: "Pending Invitations", icon: <Inbox className="h-5 w-5" /> },
@@ -78,8 +80,8 @@ export default function DashboardPage() {
       const eventsArray = Array.isArray(resultEvents)
         ? resultEvents
         : Array.isArray(resultEvents.data)
-        ? resultEvents.data
-        : [];
+          ? resultEvents.data
+          : [];
       setEvents(
         eventsArray.map((e: any) => ({
           id: e.id,
@@ -92,7 +94,7 @@ export default function DashboardPage() {
           fee: e.fee || 0,
           isPublic: e.isPublic,
           type: e.isPublic ? "Public" : "Private",
-        }))
+        })),
       );
 
       // Fetch Invitations
@@ -100,17 +102,22 @@ export default function DashboardPage() {
         credentials: "include",
       });
       const inviteData = await resInvites.json();
-      const inviteArray =
-        Array.isArray(inviteData) ? inviteData : Array.isArray(inviteData.data) ? inviteData.data : [];
+      const inviteArray = Array.isArray(inviteData)
+        ? inviteData
+        : Array.isArray(inviteData.data)
+          ? inviteData.data
+          : [];
       setInvitations(
         inviteArray.map((i: any) => ({
           id: i.id,
           eventId: i.event?.id,
           title: i.event?.title || "Untitled",
-          date: i.event?.date ? new Date(i.event.date).toLocaleDateString() : "N/A",
+          date: i.event?.date
+            ? new Date(i.event.date).toLocaleDateString()
+            : "N/A",
           organizer: i.event?.organizer?.name || "Unknown",
           fee: i.event?.fee || 0,
-        }))
+        })),
       );
 
       // Fetch Reviews
@@ -118,8 +125,11 @@ export default function DashboardPage() {
         credentials: "include",
       });
       const reviewData = await resReviews.json();
-      const reviewArray =
-        Array.isArray(reviewData) ? reviewData : Array.isArray(reviewData.data) ? reviewData.data : [];
+      const reviewArray = Array.isArray(reviewData)
+        ? reviewData
+        : Array.isArray(reviewData.data)
+          ? reviewData.data
+          : [];
       setReviews(
         reviewArray.map((r: any) => ({
           id: r.id,
@@ -127,7 +137,7 @@ export default function DashboardPage() {
           rating: r.rating,
           comment: r.comment,
           reviewer: r.reviewer?.name || "Anonymous",
-        }))
+        })),
       );
     } catch (err: any) {
       setError(err.message || "Failed to fetch data");
@@ -143,41 +153,88 @@ export default function DashboardPage() {
 
   // -------------------- Action Buttons --------------------
   const renderActionButton = (event: EventCard) => {
-    const buttonText = event.type === "Public" ? (event.fee === 0 ? "Join" : "Pay & Join") : event.fee === 0 ? "Request" : "Pay & Request";
+    const buttonText =
+      event.type === "Public"
+        ? event.fee === 0
+          ? "Join"
+          : "Pay & Join"
+        : event.fee === 0
+          ? "Request"
+          : "Pay & Request";
+
     const buttonClass =
       event.type === "Public"
         ? event.fee === 0
           ? "bg-emerald-500 text-white hover:bg-emerald-600"
           : "bg-indigo-600 text-white hover:bg-indigo-700"
         : event.fee === 0
-        ? "bg-yellow-500 text-black hover:bg-yellow-600"
-        : "bg-red-500 text-white hover:bg-red-600";
+          ? "bg-yellow-500 text-black hover:bg-yellow-600"
+          : "bg-red-500 text-white hover:bg-red-600";
+
     return (
-      <Link
-        href={`/dashboard/${event.id}`}
+      <button
+        onClick={
+          () =>
+            event.fee > 0
+              ? handlePayment(event) // Paid → SSLCOMMERZ
+              : handleFreeJoin(event.id, event.type) // Free → Request/Join
+        }
         className={`px-4 py-2 rounded-full font-semibold transition ${buttonClass}`}
       >
         {buttonText}
-      </Link>
+      </button>
     );
   };
 
   // -------------------- Delete Event --------------------
-  const handleDeleteEvent = async (id: number) => {
-    if (!confirm("Are you sure you want to delete this event?")) return;
-    try {
-      const res = await fetch(`http://localhost:5000/api/events/${id}`, {
-        method: "DELETE",
-        credentials: "include",
-      });
-      if (!res.ok) throw new Error("Failed to delete event");
-      toast.success("Event deleted successfully!");
-      fetchData();
-    } catch (err: any) {
-      toast.error(err.message);
-    }
-  };
+  const handleDeleteEvent = (id: number) => {
+    toast.custom((t) => (
+      <div className="bg-white dark:bg-slate-800 p-4 rounded-lg shadow-lg border w-[300px]">
+        <p className="font-semibold mb-3">Are you sure?</p>
+        <p className="text-sm text-gray-500 mb-4">
+          This event will be permanently deleted.
+        </p>
 
+        <div className="flex justify-end gap-2">
+          <button
+            onClick={() => toast.dismiss(t)}
+            className="px-3 py-1 rounded bg-gray-200"
+          >
+            Cancel
+          </button>
+
+          <button
+            onClick={async () => {
+              try {
+                setDeletingId(id);
+
+                const res = await fetch(
+                  `http://localhost:5000/api/events/${id}`,
+                  {
+                    method: "DELETE",
+                    credentials: "include",
+                  },
+                );
+
+                if (!res.ok) throw new Error("Failed to delete event");
+
+                toast.success("Event deleted successfully!");
+                toast.dismiss(t);
+                fetchData();
+              } catch (err: any) {
+                toast.error(err.message || "Delete failed");
+              } finally {
+                setDeletingId(null);
+              }
+            }}
+            className="px-3 py-1 rounded bg-red-500 text-white"
+          >
+            Delete
+          </button>
+        </div>
+      </div>
+    ));
+  };
   // -------------------- Edit Event --------------------
   const handleEditEvent = (event: EventCard) => {
     setEditingEvent(event);
@@ -185,12 +242,18 @@ export default function DashboardPage() {
   };
 
   // -------------------- Accept / Decline Invitation --------------------
-  const handleInvitation = async (inviteId: number, action: "accept" | "decline") => {
+  const handleInvitation = async (
+    inviteId: number,
+    action: "accept" | "decline",
+  ) => {
     try {
-      const res = await fetch(`http://localhost:5000/api/invitations/${inviteId}/${action}`, {
-        method: "POST",
-        credentials: "include",
-      });
+      const res = await fetch(
+        `http://localhost:5000/api/invitations/${inviteId}/${action}`,
+        {
+          method: "POST",
+          credentials: "include",
+        },
+      );
       if (!res.ok) throw new Error("Failed to update invitation");
       toast.success(`Invitation ${action}ed successfully!`);
       fetchData();
@@ -215,6 +278,61 @@ export default function DashboardPage() {
     }
   };
 
+  // -------------------- Make Payment --------------------
+  const handlePayment = async (event: EventCard) => {
+    try {
+      const res = await fetch("http://localhost:5000/api/payment/sslcommerz", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({
+          eventId: event.id,
+          amount: event.fee,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) throw new Error(data.message || "Payment initiation failed");
+
+      // Redirect user to SSLCOMMERZ payment page
+      window.location.href = data.GatewayPageURL;
+    } catch (err: any) {
+      toast.error(err.message || "Payment error");
+    }
+  };
+
+  const handleFreeJoin = async (
+    eventId: number,
+    type: "Public" | "Private",
+  ) => {
+    try {
+      const endpoint =
+        type === "Public"
+          ? `/api/events/${eventId}/join`
+          : `/api/events/${eventId}/request`;
+
+      const res = await fetch(`http://localhost:5000${endpoint}`, {
+        method: "POST",
+        credentials: "include",
+      });
+
+      if (!res.ok) throw new Error("Action failed");
+
+      toast.success(
+        type === "Public"
+          ? "Joined successfully!"
+          : "Request sent successfully!",
+      );
+
+      fetchData();
+    } catch (err: any) {
+      toast.error(err.message);
+    }
+  };
+
   // -------------------- Render --------------------
   return (
     <div className="flex min-h-screen flex-col lg:flex-row bg-slate-100 dark:bg-slate-900">
@@ -222,7 +340,7 @@ export default function DashboardPage() {
       <aside
         className={cn(
           "bg-gradient-to-b from-indigo-500 to-pink-500 text-white w-64 fixed lg:relative h-full z-50 transition-transform",
-          sidebarOpen ? "translate-x-0" : "-translate-x-64"
+          sidebarOpen ? "translate-x-0" : "-translate-x-64",
         )}
       >
         <div className="flex justify-between p-6">
@@ -238,7 +356,7 @@ export default function DashboardPage() {
             onClick={() => setActiveSection(section.title)}
             className={cn(
               "block w-full text-left px-6 py-3",
-              activeSection === section.title && "bg-white/20"
+              activeSection === section.title && "bg-white/20",
             )}
           >
             {section.icon}
@@ -264,7 +382,10 @@ export default function DashboardPage() {
         {activeSection === "My Events" && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {events.map((event) => (
-              <div key={event.id} className="bg-white dark:bg-slate-800 p-5 rounded-xl shadow flex flex-col justify-between">
+              <div
+                key={event.id}
+                className="bg-white dark:bg-slate-800 p-5 rounded-xl shadow flex flex-col justify-between"
+              >
                 <div>
                   <h3 className="text-lg font-bold">{event.title}</h3>
                   <p>Date: {event.date}</p>
@@ -274,8 +395,19 @@ export default function DashboardPage() {
                   <p>Fee: {event.fee === 0 ? "Free" : event.fee}</p>
                 </div>
                 <div className="flex gap-2 mt-4">
-                  <button onClick={() => handleEditEvent(event)} className="bg-yellow-500 text-white px-3 py-1 rounded">Edit</button>
-                  <button onClick={() => handleDeleteEvent(event.id)} className="bg-red-500 text-white px-3 py-1 rounded">Delete</button>
+                  <button
+                    onClick={() => handleEditEvent(event)}
+                    className="bg-yellow-500 text-white px-3 py-1 rounded"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    onClick={() => handleDeleteEvent(event.id)}
+                    disabled={deletingId === event.id}
+                    className="bg-red-500 text-white px-3 py-1 rounded disabled:opacity-50"
+                  >
+                    {deletingId === event.id ? "Deleting..." : "Delete"}
+                  </button>
                   {renderActionButton(event)}
                 </div>
               </div>
@@ -283,21 +415,39 @@ export default function DashboardPage() {
           </div>
         )}
 
-        {/* Invitations */}
         {activeSection === "Pending Invitations" && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {invitations.map((invite) => (
-              <div key={invite.id} className="bg-white dark:bg-slate-800 p-5 rounded-xl shadow">
-                <h3 className="font-bold">{invite.title}</h3>
-                <p>Date: {invite.date}</p>
-                <p>Organizer: {invite.organizer}</p>
-                <p>Fee: {invite.fee === 0 ? "Free" : invite.fee}</p>
-                <div className="flex gap-2 mt-2">
-                  <button onClick={() => handleInvitation(invite.id, "accept")} className="bg-emerald-500 text-white px-3 py-1 rounded">Accept</button>
-                  <button onClick={() => handleInvitation(invite.id, "decline")} className="bg-red-500 text-white px-3 py-1 rounded">Decline</button>
+            {Array.isArray(invitations) && invitations.length > 0 ? (
+              invitations.map((invite) => (
+                <div
+                  key={invite.id}
+                  className="bg-white dark:bg-slate-800 p-5 rounded-xl shadow"
+                >
+                  <h3 className="font-bold">{invite.title}</h3>
+                  <p>Date: {invite.date}</p>
+                  <p>Organizer: {invite.organizer}</p>
+                  <p>Fee: {invite.fee === 0 ? "Free" : invite.fee}</p>
+
+                  <div className="flex gap-2 mt-2">
+                    <button
+                      onClick={() => handleInvitation(invite.id, "accept")}
+                      className="bg-emerald-500 text-white px-3 py-1 rounded"
+                    >
+                      Accept
+                    </button>
+
+                    <button
+                      onClick={() => handleInvitation(invite.id, "decline")}
+                      className="bg-red-500 text-white px-3 py-1 rounded"
+                    >
+                      Decline
+                    </button>
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))
+            ) : (
+              <p>No invitations found</p>
+            )}
           </div>
         )}
 
@@ -305,15 +455,28 @@ export default function DashboardPage() {
         {activeSection === "My Reviews" && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {reviews.map((review) => (
-              <div key={review.id} className="bg-white dark:bg-slate-800 p-5 rounded-xl shadow">
+              <div
+                key={review.id}
+                className="bg-white dark:bg-slate-800 p-5 rounded-xl shadow"
+              >
                 <h3 className="font-bold">Event ID: {review.eventId}</h3>
                 <p>Rating: {review.rating}</p>
                 <p>Comment: {review.comment}</p>
                 <p>Reviewer: {review.reviewer}</p>
                 <div className="flex gap-2 mt-2">
                   {/* For now, edit review could open a modal similar to edit event */}
-                  <button onClick={() => toast("Edit review not implemented yet")} className="bg-yellow-500 text-white px-3 py-1 rounded">Edit</button>
-                  <button onClick={() => handleDeleteReview(review.id)} className="bg-red-500 text-white px-3 py-1 rounded">Delete</button>
+                  <button
+                    onClick={() => toast("Edit review not implemented yet")}
+                    className="bg-yellow-500 text-white px-3 py-1 rounded"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    onClick={() => handleDeleteReview(review.id)}
+                    className="bg-red-500 text-white px-3 py-1 rounded"
+                  >
+                    Delete
+                  </button>
                 </div>
               </div>
             ))}
@@ -321,7 +484,9 @@ export default function DashboardPage() {
         )}
 
         {/* Settings */}
-        {activeSection === "Settings" && <p>Settings panel (update profile, notifications, etc.)</p>}
+        {activeSection === "Settings" && (
+          <p>Settings panel (update profile, notifications, etc.)</p>
+        )}
 
         {/* Edit Modal */}
         {modalOpen && editingEvent && (
@@ -341,12 +506,15 @@ export default function DashboardPage() {
                     isPublic: e.currentTarget.isPublic.checked,
                   };
                   try {
-                    const res = await fetch(`http://localhost:5000/api/events/${editingEvent.id}`, {
-                      method: "PUT",
-                      headers: { "Content-Type": "application/json" },
-                      credentials: "include",
-                      body: JSON.stringify(body),
-                    });
+                    const res = await fetch(
+                      `http://localhost:5000/api/events/${editingEvent.id}`,
+                      {
+                        method: "PUT",
+                        headers: { "Content-Type": "application/json" },
+                        credentials: "include",
+                        body: JSON.stringify(body),
+                      },
+                    );
                     if (!res.ok) throw new Error("Failed to update event");
                     toast.success("Event updated successfully!");
                     setModalOpen(false);
@@ -358,18 +526,73 @@ export default function DashboardPage() {
                 }}
                 className="flex flex-col gap-3"
               >
-                <input type="text" name="title" defaultValue={editingEvent.title} placeholder="Title" className="border p-2 rounded" required />
-                <input type="date" name="date" defaultValue={editingEvent.date} className="border p-2 rounded" required />
-                <input type="time" name="time" defaultValue={editingEvent.time} className="border p-2 rounded" required />
-                <input type="text" name="venue" defaultValue={editingEvent.venue} placeholder="Venue" className="border p-2 rounded" required />
-                <textarea name="description" defaultValue={editingEvent.description} placeholder="Description" className="border p-2 rounded" required />
-                <input type="number" name="fee" defaultValue={editingEvent.fee} placeholder="Fee" className="border p-2 rounded" required />
+                <input
+                  type="text"
+                  name="title"
+                  defaultValue={editingEvent.title}
+                  placeholder="Title"
+                  className="border p-2 rounded"
+                  required
+                />
+                <input
+                  type="date"
+                  name="date"
+                  defaultValue={editingEvent.date}
+                  className="border p-2 rounded"
+                  required
+                />
+                <input
+                  type="time"
+                  name="time"
+                  defaultValue={editingEvent.time}
+                  className="border p-2 rounded"
+                  required
+                />
+                <input
+                  type="text"
+                  name="venue"
+                  defaultValue={editingEvent.venue}
+                  placeholder="Venue"
+                  className="border p-2 rounded"
+                  required
+                />
+                <textarea
+                  name="description"
+                  defaultValue={editingEvent.description}
+                  placeholder="Description"
+                  className="border p-2 rounded"
+                  required
+                />
+                <input
+                  type="number"
+                  name="fee"
+                  defaultValue={editingEvent.fee}
+                  placeholder="Fee"
+                  className="border p-2 rounded"
+                  required
+                />
                 <label className="flex items-center gap-2">
-                  <input type="checkbox" name="isPublic" defaultChecked={editingEvent.isPublic} /> Public Event
+                  <input
+                    type="checkbox"
+                    name="isPublic"
+                    defaultChecked={editingEvent.isPublic}
+                  />{" "}
+                  Public Event
                 </label>
                 <div className="flex justify-end gap-2 mt-2">
-                  <button type="button" onClick={() => setModalOpen(false)} className="px-4 py-2 rounded bg-gray-300">Cancel</button>
-                  <button type="submit" className="px-4 py-2 rounded bg-indigo-500 text-white">Save</button>
+                  <button
+                    type="button"
+                    onClick={() => setModalOpen(false)}
+                    className="px-4 py-2 rounded bg-gray-300"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-4 py-2 rounded bg-indigo-500 text-white"
+                  >
+                    Save
+                  </button>
                 </div>
               </form>
             </div>
