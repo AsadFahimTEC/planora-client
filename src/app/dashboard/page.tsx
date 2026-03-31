@@ -265,27 +265,56 @@ export default function DashboardPage() {
   };
 
   const handleUpdateEvent = async () => {
-    if (!editingEvent) return;
+    if (!editingEvent?.id) {
+      toast.error("Event ID missing");
+      return;
+    }
 
     try {
+      const loadingToast = toast.loading("Updating event...");
+
+      // Only send allowed fields (IMPORTANT)
+      const updatedData = {
+        title: editingEvent.title,
+        startDate: editingEvent.startDate,
+        endDate: editingEvent.endDate,
+        venue: editingEvent.venue,
+        description: editingEvent.description,
+        type: editingEvent.type,
+        feeType: editingEvent.feeType,
+        registrationFee: editingEvent.registrationFee,
+        maxParticipants: editingEvent.maxParticipants,
+        category: editingEvent.category,
+        status: editingEvent.status,
+      };
+
       const res = await fetch(
         `http://localhost:5000/api/events/${editingEvent.id}`,
         {
-          method: "PUT",
+          method: "PUT", // যদি backend PATCH হয় তাহলে PATCH করো
           credentials: "include",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(editingEvent),
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(updatedData),
         },
       );
 
-      if (!res.ok) throw new Error("Update failed");
+      const data = await res.json();
 
-      toast.success("Event updated!");
+      toast.dismiss(loadingToast);
+
+      if (!res.ok) {
+        throw new Error(data.message || "Update failed");
+      }
+
+      toast.success("Event updated successfully!");
+
       setModalOpen(false);
       setEditingEvent(null);
       fetchData();
     } catch (err: any) {
-      toast.error(err.message);
+      toast.error(err.message || "Something went wrong");
     }
   };
 
