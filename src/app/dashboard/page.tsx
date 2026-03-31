@@ -17,8 +17,7 @@ import {
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
-/* ================= TYPES ================= */
-
+// --------------------- Types ---------------------
 interface EventCard {
   id: number;
   title: string;
@@ -28,7 +27,9 @@ interface EventCard {
   description: string;
   organizer: string;
   fee: number;
+  isPublic: boolean;
   type: "Public" | "Private";
+  participants?: any[];
   joinRequests?: any[];
 }
 
@@ -56,9 +57,9 @@ interface UserCard {
   role: string;
 }
 
-/* ================= DASHBOARD ================= */
-
+// --------------------- Dashboard ---------------------
 export default function DashboardPage() {
+  // --------------------- States ---------------------
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [activeSection, setActiveSection] = useState("My Events");
 
@@ -68,84 +69,121 @@ export default function DashboardPage() {
   const [users, setUsers] = useState<UserCard[]>([]);
 
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const [modalOpen, setModalOpen] = useState(false);
+  const [editingEvent, setEditingEvent] = useState<EventCard | null>(null);
+
   const [invoiceOpen, setInvoiceOpen] = useState(false);
   const [invoiceData, setInvoiceData] = useState<any>(null);
+
   const [deletingId, setDeletingId] = useState<number | null>(null);
 
+  // --------------------- Sections ---------------------
   const sections = [
     { title: "My Events", icon: <Calendar className="h-5 w-5" /> },
     { title: "Pending Invitations", icon: <Inbox className="h-5 w-5" /> },
     { title: "My Reviews", icon: <Star className="h-5 w-5" /> },
+    { title: "Settings", icon: <SettingsIcon className="h-5 w-5" /> },
     { title: "Admin", icon: <User className="h-5 w-5" /> },
   ];
 
-  /* ================= FETCH ================= */
-
+  // --------------------- Fetch Data ---------------------
   const fetchData = async () => {
     try {
       setLoading(true);
 
-      const [e, i, r, u] = await Promise.all([
-        fetch("http://localhost:5000/api/events", {
-          credentials: "include",
-        }),
-        fetch("http://localhost:5000/api/invitations", {
-          credentials: "include",
-        }),
-        fetch("http://localhost:5000/api/reviews", {
-          credentials: "include",
-        }),
-        fetch("http://localhost:5000/api/admin/users", {
-          credentials: "include",
-        }),
-      ]);
-
-      const eventsData = await e.json();
-      const inviteData = await i.json();
-      const reviewData = await r.json();
-      const userData = await u.json();
-
+      // Events
+      const resEvents = await fetch("http://localhost:5000/api/events", {
+        credentials: "include",
+      });
+      const eventData = await resEvents.json();
+      const eventsArray = Array.isArray(eventData)
+        ? eventData
+        : Array.isArray(eventData.data)
+          ? eventData.data
+          : [];
       setEvents(
-        (eventsData.data || []).map((ev: any) => ({
-          id: ev.id,
-          title: ev.title,
-          date: ev.date ? new Date(ev.date).toLocaleDateString() : "N/A",
-          time: ev.time || "",
-          venue: ev.venue || "",
-          description: ev.description || "",
-          organizer: ev.organizer?.name || "Unknown",
-          fee: ev.fee || 0,
-          type: ev.isPublic ? "Public" : "Private",
-          joinRequests: ev.joinRequests || [],
+        eventsArray.map((e: any) => ({
+          id: e.id,
+          title: e.title,
+          date: e.date ? new Date(e.date).toLocaleDateString() : "N/A",
+          time: e.time || "",
+          venue: e.venue || "",
+          description: e.description || "",
+          organizer: e.organizer?.name || "Unknown",
+          fee: e.fee || 0,
+          isPublic: e.isPublic,
+          type: e.isPublic ? "Public" : "Private",
+          participants: e.participants || [],
+          joinRequests: e.joinRequests || [],
         })),
       );
 
+      // Invitations
+      const resInvites = await fetch("http://localhost:5000/api/invitations", {
+        credentials: "include",
+      });
+      const inviteData = await resInvites.json();
+      const inviteArray = Array.isArray(inviteData)
+        ? inviteData
+        : Array.isArray(inviteData.data)
+          ? inviteData.data
+          : [];
       setInvitations(
-        (inviteData.data || []).map((inv: any) => ({
-          id: inv.id,
-          eventId: inv.event?.id,
-          title: inv.event?.title,
-          date: inv.event?.date
-            ? new Date(inv.event.date).toLocaleDateString()
+        inviteArray.map((i: any) => ({
+          id: i.id,
+          eventId: i.event?.id,
+          title: i.event?.title || "Untitled",
+          date: i.event?.date
+            ? new Date(i.event.date).toLocaleDateString()
             : "N/A",
-          organizer: inv.event?.organizer?.name,
-          fee: inv.event?.fee || 0,
+          organizer: i.event?.organizer?.name || "Unknown",
+          fee: i.event?.fee || 0,
         })),
       );
 
+      // Reviews
+      const resReviews = await fetch("http://localhost:5000/api/reviews", {
+        credentials: "include",
+      });
+      const reviewData = await resReviews.json();
+      const reviewArray = Array.isArray(reviewData)
+        ? reviewData
+        : Array.isArray(reviewData.data)
+          ? reviewData.data
+          : [];
       setReviews(
-        (reviewData.data || []).map((rev: any) => ({
-          id: rev.id,
-          eventId: rev.eventId,
-          rating: rev.rating,
-          comment: rev.comment,
-          reviewer: rev.reviewer?.name || "Anonymous",
+        reviewArray.map((r: any) => ({
+          id: r.id,
+          eventId: r.eventId,
+          rating: r.rating,
+          comment: r.comment,
+          reviewer: r.reviewer?.name || "Anonymous",
         })),
       );
 
-      setUsers(userData.data || []);
+      // Admin Users
+      const resUsers = await fetch("http://localhost:5000/api/admin/users", {
+        credentials: "include",
+      });
+      const userData = await resUsers.json();
+      const userArray = Array.isArray(userData)
+        ? userData
+        : Array.isArray(userData.data)
+          ? userData.data
+          : [];
+      setUsers(
+        userArray.map((u: any) => ({
+          id: u.id,
+          name: u.name,
+          email: u.email,
+          role: u.role,
+        })),
+      );
     } catch (err: any) {
-      toast.error("Failed to fetch data");
+      setError(err.message || "Failed to fetch data");
+      toast.error(err.message || "Failed to fetch data");
     } finally {
       setLoading(false);
     }
@@ -155,73 +193,17 @@ export default function DashboardPage() {
     fetchData();
   }, []);
 
-  /* ================= ACTIONS ================= */
+  // --------------------- Actions ---------------------
 
-  const handleDeleteEvent = async (eventId: number) => {
-    toast(
-      (t) => (
-        <div className="flex flex-col gap-3">
-          <p className="font-semibold">
-            Are you sure you want to delete this event?
-          </p>
-
-          <div className="flex gap-2 justify-end">
-            <button
-              onClick={() => toast.dismiss(t)}
-              className="px-3 py-1 bg-gray-200 rounded"
-            >
-              Cancel
-            </button>
-
-            <button
-              onClick={async () => {
-                toast.dismiss(t);
-
-                const loadingToast = toast.loading("Deleting event...");
-
-                try {
-                  const res = await fetch(
-                    `http://localhost:5000/api/events/${eventId}`,
-                    {
-                      method: "DELETE",
-                      credentials: "include",
-                    },
-                  );
-
-                  const data = await res.json();
-
-                  if (!res.ok) {
-                    throw new Error(data.message || "Delete failed");
-                  }
-
-                  toast.dismiss(loadingToast);
-                  toast.success("Event deleted successfully!");
-
-                  // Refresh UI
-                  fetchData();
-                } catch (error: any) {
-                  toast.dismiss(loadingToast);
-                  toast.error(error.message || "Something went wrong");
-                }
-              }}
-              className="px-3 py-1 bg-red-500 text-white rounded"
-            >
-              Delete
-            </button>
-          </div>
-        </div>
-      ),
-      {
-        duration: 10000,
-      },
-    );
-  };
-
+  // Join / Request Free Event
   const handleFreeJoin = async (
     eventId: number,
     type: "Public" | "Private",
   ) => {
     try {
+      const event = events.find((e) => e.id === eventId);
+      if (!event) throw new Error("Event not found");
+
       const endpoint =
         type === "Public"
           ? `/api/events/${eventId}/join`
@@ -230,26 +212,32 @@ export default function DashboardPage() {
       const res = await fetch(`http://localhost:5000${endpoint}`, {
         method: "POST",
         credentials: "include",
+        headers: { "Content-Type": "application/json" },
       });
 
-      if (!res.ok) throw new Error("Failed");
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || "Request failed");
 
-      toast.success("Success!");
+      toast.success(
+        type === "Public"
+          ? "Joined successfully!"
+          : "Request sent successfully!",
+      );
 
       setInvoiceData({
-        transactionId: `FREE-${Date.now()}`,
-        amount: 0,
+        transactionId: `FREE-${eventId}-${Date.now()}`,
+        amount: event.fee,
         date: new Date().toLocaleString(),
-        status: "Free",
+        status: event.fee === 0 ? "Free" : "Paid",
       });
-
       setInvoiceOpen(true);
       fetchData();
-    } catch {
-      toast.error("Join failed");
+    } catch (err: any) {
+      toast.error(err.message || "Something went wrong");
     }
   };
 
+  // Paid Event Payment
   const handlePayment = async (event: EventCard) => {
     try {
       const res = await fetch("http://localhost:5000/api/payments/sslcommerz", {
@@ -263,67 +251,232 @@ export default function DashboardPage() {
       });
 
       const data = await res.json();
-      if (data.GatewayPageURL) window.location.href = data.GatewayPageURL;
-    } catch {
-      toast.error("Payment failed");
+
+      if (!res.ok) throw new Error(data.message);
+
+      if (data.GatewayPageURL) {
+        window.location.href = data.GatewayPageURL;
+      } else {
+        toast.error("Payment URL missing");
+      }
+    } catch (err: any) {
+      toast.error(err.message);
     }
   };
 
-  /* ================= UI ================= */
+  const handleUpdateEvent = async () => {
+    if (!editingEvent) return;
 
+    try {
+      const res = await fetch(
+        `http://localhost:5000/api/events/${editingEvent.id}`,
+        {
+          method: "PUT",
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(editingEvent),
+        },
+      );
+
+      if (!res.ok) throw new Error("Update failed");
+
+      toast.success("Event updated!");
+      setModalOpen(false);
+      setEditingEvent(null);
+      fetchData();
+    } catch (err: any) {
+      toast.error(err.message);
+    }
+  };
+
+  // Admin: Delete User
+  const handleDeleteUser = async (userId: number) => {
+    if (!confirm("Are you sure you want to delete this user?")) return;
+    try {
+      const res = await fetch(
+        `http://localhost:5000/api/admin/users/${userId}`,
+        { method: "DELETE", credentials: "include" },
+      );
+      if (!res.ok) throw new Error("Failed to delete user");
+      toast.success("User deleted successfully!");
+      fetchData();
+    } catch (err: any) {
+      toast.error(err.message);
+    }
+  };
+
+  // --------------------- UI Rendering ---------------------
   return (
-    <div className="flex min-h-screen bg-slate-100">
+    <div className="flex min-h-screen flex-col lg:flex-row bg-slate-100 dark:bg-slate-900">
       {/* Sidebar */}
-      <aside className="w-64 bg-indigo-600 text-white p-6 hidden lg:block">
-        <h1 className="text-xl font-bold mb-6">Dashboard</h1>
-        {sections.map((s) => (
+      <aside
+        className={cn(
+          "bg-gradient-to-b from-indigo-500 to-pink-500 text-white w-64 fixed lg:relative h-full z-50 transition-transform",
+          sidebarOpen ? "translate-x-0" : "-translate-x-64",
+        )}
+      >
+        <div className="flex justify-between p-6">
+          <h1 className="text-xl font-bold">Dashboard</h1>
+          <button onClick={() => setSidebarOpen(false)} className="lg:hidden">
+            <X />
+          </button>
+        </div>
+
+        {sections.map((section) => (
           <button
-            key={s.title}
-            onClick={() => setActiveSection(s.title)}
+            key={section.title}
+            onClick={() => setActiveSection(section.title)}
             className={cn(
-              "block w-full text-left px-4 py-2 rounded mb-2",
-              activeSection === s.title && "bg-white/20",
+              "block w-full text-left px-6 py-3",
+              activeSection === section.title && "bg-white/20",
             )}
           >
-            {s.title}
+            {section.icon} {section.title}
           </button>
         ))}
       </aside>
 
-      {/* Main */}
+      {/* Main Content */}
       <div className="flex-1 p-6">
-        {loading && (
-          <div className="flex justify-center items-center h-40">
-            <div className="w-12 h-12 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
-          </div>
-        )}
+        <header className="lg:hidden flex justify-between items-center mb-4">
+          <button onClick={() => setSidebarOpen(true)}>
+            <Menu />
+          </button>
+          <h2>{activeSection}</h2>
+          <div></div>
+        </header>
 
-        {/* Events */}
+        {loading && <p>Loading data...</p>}
+        {error && <p className="text-red-500">{error}</p>}
+
+        {/* --------------------- My Events --------------------- */}
         {activeSection === "My Events" && (
-          <div className="grid md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {events.map((event) => (
-              <div key={event.id} className="bg-white p-5 rounded-xl shadow">
-                <h3 className="font-bold">{event.title}</h3>
-                <p>{event.date}</p>
-                <p>৳ {event.fee}</p>
+              <div
+                key={event.id}
+                className="bg-white dark:bg-slate-800 p-5 rounded-xl shadow flex flex-col justify-between"
+              >
+                <div>
+                  <h3 className="text-lg font-bold">{event.title}</h3>
+                  <p>Date: {event.date}</p>
+                  <p>Time: {event.time}</p>
+                  <p>Venue: {event.venue}</p>
+                  <p>Organizer: {event.organizer}</p>
+                  <p>Fee: {event.fee === 0 ? "Free" : `৳ ${event.fee}`}</p>
+                </div>
+
+                {/* Owner Controls */}
+                {event.joinRequests && event.joinRequests.length > 0 && (
+                  <div className="mt-2">
+                    <p className="font-semibold">Join Requests:</p>
+                    {event.joinRequests.map((req: any) => (
+                      <div
+                        key={req.userId}
+                        className="flex justify-between items-center mt-1"
+                      >
+                        <span>{req.userName}</span>
+                        <div className="flex gap-1">
+                          <button
+                            onClick={() =>
+                              event.fee === 0
+                                ? handleFreeJoin(event.id, event.type)
+                                : handlePayment(event)
+                            }
+                            className="bg-green-500 px-2 py-1 text-white rounded"
+                          >
+                            <Check size={14} />
+                          </button>
+                          <button
+                            onClick={() =>
+                              event.fee === 0
+                                ? handleFreeJoin(event.id, event.type)
+                                : handlePayment(event)
+                            }
+                            className="bg-red-500 px-2 py-1 text-white rounded"
+                          >
+                            <XCircle size={14} />
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
 
                 <div className="flex gap-2 mt-4">
                   <button
-                    onClick={() =>
-                      event.fee === 0
-                        ? handleFreeJoin(event.id, event.type)
-                        : handlePayment(event)
-                    }
-                    className="bg-indigo-600 text-white px-3 py-1 rounded"
+                    onClick={() => {
+                      setEditingEvent(event);
+                      setModalOpen(true);
+                    }}
+                    className="bg-yellow-500 text-white px-3 py-1 rounded"
                   >
-                    {event.fee === 0 ? "Join / Request" : "Pay & Join"}
+                    Edit
                   </button>
-
                   <button
-                    onClick={() => handleDeleteEvent(event.id)}
-                    className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded transition"
+                    onClick={() => {
+                      toast((t) => (
+                        <div className="flex flex-col gap-3">
+                          <p className="font-semibold text-gray-800">
+                            ⚠️ Delete "{event.title}" permanently?
+                          </p>
+
+                          <p className="text-sm text-gray-500">
+                            This action cannot be undone. All related data will
+                            be removed.
+                          </p>
+
+                          <div className="flex justify-end gap-2 mt-2">
+                            <button
+                              onClick={() => toast.dismiss(t)}
+                              className="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300 transition"
+                            >
+                              Cancel
+                            </button>
+
+                            <button
+                              onClick={async () => {
+                                toast.dismiss(t);
+                                const loadingToast =
+                                  toast.loading("Deleting event...");
+
+                                try {
+                                  const res = await fetch(
+                                    `http://localhost:5000/api/events/${event.id}`,
+                                    {
+                                      method: "DELETE",
+                                      credentials: "include",
+                                    },
+                                  );
+
+                                  if (!res.ok)
+                                    throw new Error("Failed to delete event");
+
+                                  toast.dismiss(loadingToast);
+                                  toast.success("Event deleted successfully!");
+                                  fetchData();
+                                } catch (err: any) {
+                                  toast.dismiss(loadingToast);
+                                  toast.error(err.message || "Delete failed");
+                                }
+                              }}
+                              className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600 transition"
+                            >
+                              Yes, Delete
+                            </button>
+                          </div>
+                        </div>
+                      ));
+                    }}
+                    className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 transition"
                   >
                     Delete
+                  </button>
+                  <button
+                    onClick={() => handleFreeJoin(event.id, event.type)}
+                    className="bg-indigo-600 text-white px-3 py-1 rounded"
+                  >
+                    {event.fee === 0 ? "Join / Request" : `Pay & Join`}
                   </button>
                 </div>
               </div>
@@ -331,50 +484,157 @@ export default function DashboardPage() {
           </div>
         )}
 
-        {/* Reviews */}
-        {activeSection === "My Reviews" && (
-          <div className="grid md:grid-cols-3 gap-6">
-            {reviews.map((review) => (
-              <div key={review.id} className="bg-white p-5 rounded-xl shadow">
-                <p>Event ID: {review.eventId}</p>
-                <p>Rating: {review.rating}</p>
-                <p>{review.comment}</p>
+        {/* --------------------- Invitations --------------------- */}
+        {activeSection === "Pending Invitations" && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {invitations.map((invite) => (
+              <div
+                key={invite.id}
+                className="bg-white dark:bg-slate-800 p-5 rounded-xl shadow"
+              >
+                <h3 className="font-bold">{invite.title}</h3>
+                <p>Date: {invite.date}</p>
+                <p>Organizer: {invite.organizer}</p>
+                <p>Fee: {invite.fee === 0 ? "Free" : `৳ ${invite.fee}`}</p>
+
+                <div className="flex gap-2 mt-2">
+                  <button
+                    onClick={() => handleFreeJoin(invite.eventId, "Private")}
+                    className="bg-emerald-500 text-white px-3 py-1 rounded"
+                  >
+                    Accept / Pay
+                  </button>
+                  <button
+                    onClick={() => toast("Decline invitation")}
+                    className="bg-red-500 text-white px-3 py-1 rounded"
+                  >
+                    Decline
+                  </button>
+                </div>
               </div>
             ))}
           </div>
         )}
 
-        {/* Admin */}
+        {/* --------------------- Reviews --------------------- */}
+        {modalOpen && editingEvent && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+            <div className="bg-white p-6 rounded w-[400px]">
+              <h2 className="font-bold mb-3">Edit Event</h2>
+
+              <input
+                value={editingEvent.title}
+                onChange={(e) =>
+                  setEditingEvent({ ...editingEvent, title: e.target.value })
+                }
+                className="border p-2 w-full mb-2"
+              />
+
+              <input
+                value={editingEvent.venue}
+                onChange={(e) =>
+                  setEditingEvent({ ...editingEvent, venue: e.target.value })
+                }
+                className="border p-2 w-full mb-2"
+              />
+
+              <input
+                type="number"
+                value={editingEvent.fee}
+                onChange={(e) =>
+                  setEditingEvent({
+                    ...editingEvent,
+                    fee: Number(e.target.value),
+                  })
+                }
+                className="border p-2 w-full mb-2"
+              />
+
+              <div className="flex justify-between">
+                <button
+                  onClick={handleUpdateEvent}
+                  className="bg-indigo-600 text-white px-3 py-1 rounded"
+                >
+                  Save
+                </button>
+
+                <button
+                  onClick={() => setModalOpen(false)}
+                  className="bg-gray-400 px-3 py-1 rounded"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* --------------------- Admin --------------------- */}
         {activeSection === "Admin" && (
-          <div className="grid md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {users.map((user) => (
-              <div key={user.id} className="bg-white p-5 rounded-xl shadow">
-                <p>{user.name}</p>
-                <p>{user.email}</p>
-                <p>{user.role}</p>
+              <div
+                key={user.id}
+                className="bg-white dark:bg-slate-800 p-5 rounded-xl shadow"
+              >
+                <p>Name: {user.name}</p>
+                <p>Email: {user.email}</p>
+                <p>Role: {user.role}</p>
+                <div className="flex gap-2 mt-2">
+                  <button
+                    onClick={() => handleDeleteUser(user.id)}
+                    className="bg-red-500 text-white px-3 py-1 rounded"
+                  >
+                    Delete User
+                  </button>
+                </div>
               </div>
             ))}
+          </div>
+        )}
+
+        {/* --------------------- Invoice Modal --------------------- */}
+        {invoiceOpen && invoiceData && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-xl p-6 w-[400px] shadow-lg relative">
+              {/* ❌ Close Icon */}
+              <button
+                onClick={() => setInvoiceOpen(false)}
+                className="absolute top-3 right-3 text-gray-500 hover:text-red-500"
+              >
+                <X size={20} />
+              </button>
+
+              <h2 className="text-xl font-bold mb-4 text-center">
+                Payment Invoice
+              </h2>
+
+              <div className="space-y-2 text-sm">
+                <p>
+                  <strong>Transaction ID:</strong> {invoiceData.transactionId}
+                </p>
+                <p>
+                  <strong>Amount:</strong> ৳ {invoiceData.amount}
+                </p>
+                <p>
+                  <strong>Date:</strong> {invoiceData.date}
+                </p>
+                <p>
+                  <strong>Status:</strong> {invoiceData.status}
+                </p>
+              </div>
+
+              {/* Close Button */}
+              <button
+                onClick={() => setInvoiceOpen(false)}
+                className="mt-4 w-full bg-indigo-600 text-white py-2 rounded"
+              >
+                Close
+              </button>
+            </div>
           </div>
         )}
       </div>
-
-      {/* Invoice Modal */}
-      {invoiceOpen && invoiceData && (
-        <div className="fixed inset-0 bg-black/50 flex justify-center items-center">
-          <div className="bg-white p-6 rounded-xl w-[400px] relative">
-            <button
-              onClick={() => setInvoiceOpen(false)}
-              className="absolute top-2 right-2"
-            >
-              ✕
-            </button>
-            <h2 className="text-xl font-bold mb-4 text-center">Invoice</h2>
-            <p>ID: {invoiceData.transactionId}</p>
-            <p>Amount: ৳ {invoiceData.amount}</p>
-            <p>Status: {invoiceData.status}</p>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
