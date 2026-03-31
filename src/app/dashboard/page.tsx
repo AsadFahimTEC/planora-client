@@ -24,7 +24,7 @@ interface EventCard {
 
   date: string; // existing
   startDate?: string; // ✅ ADD
-  endDate?: string;   // ✅ ADD
+  endDate?: string; // ✅ ADD
 
   time: string;
   venue: string;
@@ -448,31 +448,15 @@ export default function DashboardPage() {
                   </button>
                   <button
                     onClick={() => {
-                      toast((t) => (
+                      const id = toast(() => (
                         <div className="flex flex-col gap-3">
-                          <p className="font-semibold text-gray-800">
+                          <p className="font-semibold">
                             ⚠️ Delete "{event.title}" permanently?
                           </p>
 
-                          <p className="text-sm text-gray-500">
-                            This action cannot be undone. All related data will
-                            be removed.
-                          </p>
-
-                          <div className="flex justify-end gap-2 mt-2">
-                            <button
-                              onClick={() => toast.dismiss(t)}
-                              className="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300 transition"
-                            >
-                              Cancel
-                            </button>
-
+                          <div className="flex gap-2 justify-end">
                             <button
                               onClick={async () => {
-                                toast.dismiss(t);
-                                const loadingToast =
-                                  toast.loading("Deleting event...");
-
                                 try {
                                   const res = await fetch(
                                     `http://localhost:5000/api/events/${event.id}`,
@@ -482,20 +466,25 @@ export default function DashboardPage() {
                                     },
                                   );
 
-                                  if (!res.ok)
-                                    throw new Error("Failed to delete event");
+                                  if (!res.ok) throw new Error("Delete failed");
 
-                                  toast.dismiss(loadingToast);
-                                  toast.success("Event deleted successfully!");
+                                  toast.success("Event deleted!");
+                                  toast.dismiss(id);
                                   fetchData();
                                 } catch (err: any) {
-                                  toast.dismiss(loadingToast);
-                                  toast.error(err.message || "Delete failed");
+                                  toast.error(err.message);
                                 }
                               }}
-                              className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600 transition"
+                              className="bg-red-500 text-white px-3 py-1 rounded"
                             >
-                              Yes, Delete
+                              Yes
+                            </button>
+
+                            <button
+                              onClick={() => toast.dismiss(id)}
+                              className="bg-gray-300 px-3 py-1 rounded"
+                            >
+                              Cancel
                             </button>
                           </div>
                         </div>
@@ -603,59 +592,75 @@ export default function DashboardPage() {
         )}
 
         {activeSection === "Settings" && (
-  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-    {/* Theme Toggle */}
-    <div className="bg-white dark:bg-slate-800 p-5 rounded-xl shadow hover:scale-105 transform transition">
-      <h3 className="font-bold text-lg mb-2">Theme</h3>
-      <p className="text-sm text-gray-500 mb-3">
-        Switch between Light and Dark mode.
-      </p>
-      <button
-        onClick={() =>
-          document.documentElement.classList.toggle("dark")
-        }
-        className="bg-gradient-to-r from-indigo-500 to-pink-500 text-white px-4 py-2 rounded shadow hover:opacity-90 transition"
-      >
-        Toggle Theme
-      </button>
-    </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {/* Theme Toggle */}
+            <div className="bg-white dark:bg-slate-800 p-5 rounded-xl shadow hover:scale-105 transform transition">
+              <h3 className="font-bold text-lg mb-2">Theme</h3>
+              <p className="text-sm text-gray-500 mb-3">
+                Switch between Light and Dark mode.
+              </p>
+              <button
+                onClick={() =>
+                  document.documentElement.classList.toggle("dark")
+                }
+                className="bg-gradient-to-r from-indigo-500 to-pink-500 text-white px-4 py-2 rounded shadow hover:opacity-90 transition"
+              >
+                Toggle Theme
+              </button>
+            </div>
 
-    {/* Notifications */}
-    <div className="bg-white dark:bg-slate-800 p-5 rounded-xl shadow hover:scale-105 transform transition">
-      <h3 className="font-bold text-lg mb-2">Notifications</h3>
-      <p className="text-sm text-gray-500 mb-3">
-        Enable or disable notifications for your account.
-      </p>
-      <label className="flex items-center gap-2 cursor-pointer">
-        <input type="checkbox" defaultChecked className="w-5 h-5 accent-indigo-500" />
-        <span>Enable Notifications</span>
-      </label>
-    </div>
+            {/* Notifications */}
+            <div className="bg-white dark:bg-slate-800 p-5 rounded-xl shadow hover:scale-105 transform transition">
+              <h3 className="font-bold text-lg mb-2">Notifications</h3>
+              <p className="text-sm text-gray-500 mb-3">
+                Enable or disable notifications for your account.
+              </p>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  defaultChecked
+                  className="w-5 h-5 accent-indigo-500"
+                />
+                <span>Enable Notifications</span>
+              </label>
+            </div>
 
-    {/* Email Preferences */}
-    <div className="bg-white dark:bg-slate-800 p-5 rounded-xl shadow hover:scale-105 transform transition">
-      <h3 className="font-bold text-lg mb-2">Email Preferences</h3>
-      <p className="text-sm text-gray-500 mb-3">
-        Receive updates and newsletters by email.
-      </p>
-      <label className="flex items-center gap-2 cursor-pointer">
-        <input type="checkbox" defaultChecked className="w-5 h-5 accent-pink-500" />
-        <span>Subscribe to Emails</span>
-      </label>
-    </div>
+            {/* Email Preferences */}
+            <div className="bg-white dark:bg-slate-800 p-5 rounded-xl shadow hover:scale-105 transform transition">
+              <h3 className="font-bold text-lg mb-2">Email Preferences</h3>
+              <p className="text-sm text-gray-500 mb-3">
+                Receive updates and newsletters by email.
+              </p>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  defaultChecked
+                  className="w-5 h-5 accent-pink-500"
+                />
+                <span>Subscribe to Emails</span>
+              </label>
+            </div>
 
-    {/* Account Info */}
-    <div className="bg-white dark:bg-slate-800 p-5 rounded-xl shadow hover:scale-105 transform transition col-span-full">
-      <h3 className="font-bold text-lg mb-2">Account Info</h3>
-      <p className="text-sm text-gray-500 mb-3">Static account information.</p>
-      <ul className="space-y-1 text-gray-700 dark:text-gray-300">
-        <li><strong>Name:</strong> John Doe</li>
-        <li><strong>Email:</strong> johndoe@example.com</li>
-        <li><strong>Role:</strong> Admin</li>
-      </ul>
-    </div>
-  </div>
-)}
+            {/* Account Info */}
+            <div className="bg-white dark:bg-slate-800 p-5 rounded-xl shadow hover:scale-105 transform transition col-span-full">
+              <h3 className="font-bold text-lg mb-2">Account Info</h3>
+              <p className="text-sm text-gray-500 mb-3">
+                Static account information.
+              </p>
+              <ul className="space-y-1 text-gray-700 dark:text-gray-300">
+                <li>
+                  <strong>Name:</strong> John Doe
+                </li>
+                <li>
+                  <strong>Email:</strong> johndoe@example.com
+                </li>
+                <li>
+                  <strong>Role:</strong> Admin
+                </li>
+              </ul>
+            </div>
+          </div>
+        )}
 
         {/* --------------------- Admin --------------------- */}
         {activeSection === "Admin" && (
