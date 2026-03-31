@@ -1,6 +1,6 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, UseQueryOptions } from "@tanstack/react-query";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
@@ -42,7 +42,7 @@ const fetchEvents = async (): Promise<Event[]> => {
 export default function UpcomingEventsSlider() {
   const [isLoggedIn, setIsLoggedIn] = useState(true); // Assume logged in by default
     // ✅ Correctly typed useQuery
-  const { data, error, isLoading, refetch } = useQuery<Event[], Error>({
+ const queryOptions: UseQueryOptions<Event[], Error> = {
     queryKey: ["events"],
     queryFn: fetchEvents,
     retry: 1,
@@ -52,7 +52,9 @@ export default function UpcomingEventsSlider() {
         setIsLoggedIn(false);
       }
     },
-  });
+  };
+
+   const { data, error, isLoading } = useQuery(queryOptions);
 
   if (!isLoggedIn) return <p>Please log in to see events.</p>;
   if (isLoading) return <p>Loading events...</p>;
