@@ -20,10 +20,16 @@ export default function UpcomingEventsSlider() {
       credentials: "include",
     });
     if (!res.ok) throw new Error("Failed to fetch events");
-    return res.json();
+
+    const result = await res.json();
+
+    // Normalize data: support { data: [...] } or direct array
+    if (Array.isArray(result)) return result;
+    if (Array.isArray(result.data)) return result.data;
+
+    return []; // fallback to empty array
   };
 
-  // Cast to UseQueryOptions with correct generics
   const queryOptions: UseQueryOptions<Event[], Error, Event[], ["events"]> = {
     queryKey: ["events"],
     queryFn: fetchEvents,
@@ -43,9 +49,12 @@ export default function UpcomingEventsSlider() {
   if (isLoading) return <p>Loading events...</p>;
   if (error) return <p className="text-red-500">{error.message}</p>;
 
+  // Make sure data is always an array
+  const events = data ?? [];
+
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-      {data?.data?.map((event) => (
+      {events.map((event) => (
         <div
           key={event.id}
           className="bg-white dark:bg-slate-800 p-5 rounded-xl shadow"
