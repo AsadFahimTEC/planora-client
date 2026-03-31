@@ -21,7 +21,11 @@ import { cn } from "@/lib/utils";
 interface EventCard {
   id: number;
   title: string;
-  date: string;
+
+  date: string; // existing
+  startDate?: string; // ✅ ADD
+  endDate?: string;   // ✅ ADD
+
   time: string;
   venue: string;
   description: string;
@@ -281,11 +285,11 @@ export default function DashboardPage() {
         venue: editingEvent.venue,
         description: editingEvent.description,
         type: editingEvent.type,
-        feeType: editingEvent.feeType,
-        registrationFee: editingEvent.registrationFee,
-        maxParticipants: editingEvent.maxParticipants,
-        category: editingEvent.category,
-        status: editingEvent.status,
+        // feeType: editingEvent?.feeType,
+        // registrationFee: editingEvent?.registrationFee,
+        // maxParticipants: editingEvent?.maxParticipants,
+        // category: editingEvent?.category,
+        // status: editingEvent?.status,
       };
 
       const res = await fetch(
