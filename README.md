@@ -1,266 +1,83 @@
-# SkillBridge 🎓
-**"Connect with Expert Tutors, Learn Anything"**
+![Assignment-2](https://t4.ftcdn.net/jpg/03/06/88/29/360_F_306882952_XYkVbLIWubBrEyg5vvjcKisffe8CsuZG.jpg)
+
+<h1 align="center">🚀 Assignment 5</h1>
+<p align="center"><strong>Batch - 6</strong></p>
 
 ---
 
-## Project Overview
+# 📌 Project Overview
 
-SkillBridge is a full-stack web application that connects learners with expert tutors. Students can browse tutor profiles, view availability, and book sessions instantly. Tutors can manage their profiles, set availability, and track their teaching sessions. Admins oversee the platform and manage users.
-
+Planora
+Planora is a secure, JWT-protected web platform where Admins and registered Users can create, manage, and participate in events. Events can be Public or Private and may include registration fees.
 ---
 
-## Roles & Permissions
 
-| Role | Description | Key Permissions |
-|------|-------------|-----------------|
-| **Student** | Learners who book tutoring sessions | Browse tutors, book sessions, leave reviews, manage profile |
-| **Tutor** | Experts who offer tutoring services | Create profile, set availability, view bookings, manage subjects |
-| **Admin** | Platform moderators | Manage all users, view analytics, moderate content |
+# 🛠️ Technology Stack
 
-> 💡 **Note**: Users select their role during registration.Admin accounts should be seeded in the database.
+## Frontend
 
----
+* **Next.js** - Server-side rendering and static site generation
+* **Tailwind CSS** - Utility-first CSS framework
 
-## Features
+## Backend
 
-### Public Features
-- Browse and search tutors by subject, rating, and price
-- Filter tutors by category
-- View detailed tutor profiles with reviews
-- Landing page with featured tutors
+* **Node.js**
+* **Express.js** - REST API development
+* **Prisma** - Database ORM
 
-### Student Features
-- Register and login as student
-- Book tutoring sessions
-- View upcoming and past bookings
-- Leave reviews after sessions
-- Manage profile
+## Database
 
-### Tutor Features
-- Register and login as tutor
-- Create and update tutor profile
-- Set availability slots
-- View teaching sessions
-- See ratings and reviews
+* **PostgreSQL** - Relational database system
 
-### Admin Features
-- View all users (students and tutors)
-- Manage user status (ban/unban)
-- View all bookings
-- Manage categories
+## Authentication
 
----
+Implement authentication using:
 
----
+* **JWT**
+* **Better-Auth**
 
-## 🛠️ Tech Stack
+## Payment Integration
 
-### Frontend
-| Technology | Purpose |
-|------------|---------|
-| Next.js | App Router, SSR/SSG |
-| TypeScript | Type safety |
-| Tailwind CSS | Styling (or any CSS framework) |
+* **SSLCommerz**
 
-### Backend
-| Technology | Purpose |
-|------------|---------|
-| Node.js + Express | REST API |
-| Postgres + Prisma | Database |
+## Deployment
 
-### Deployment
-| Service | Purpose |
-|---------|---------|
-| Vercel/Render | Frontend & Backend deployment |
+You may deploy your project using:
 
----
-
-**Project All Details Here:**
-```
-Frontend Repo    : https://github.com/AsadFahimTEC/skillbridge-client
-Backend Repo     : https://github.com/AsadFahimTEC/skillbridge-server
-Frontend Live    : https://skillbridge-client-flame.vercel.app
-Backend Live     : https://skillbridge-server-kappa.vercel.app
-Demo Video       : https://www.loom.com/share/cd0a8b9d8f2b449298c3c043888ec595
-Admin Email      : admin5@skillbridge.com
-Admin Password   : admin1234
-```
-
-## Flow Diagrams
-
-### 👨‍🎓 Student Journey
-
-```
-                              ┌──────────────┐
-                              │   Register   │
-                              └──────────────┘
-                                     │
-                                     ▼
-                              ┌──────────────┐
-                              │Browse Tutors │
-                              └──────────────┘
-                                     │
-                                     ▼
-                              ┌──────────────┐
-                              │ View Profile │
-                              └──────────────┘
-                                     │
-                                     ▼
-                              ┌──────────────┐
-                              │ Book Session │
-                              └──────────────┘
-                                     │
-                                     ▼
-                              ┌──────────────┐
-                              │    Attend    │
-                              └──────────────┘
-                                     │
-                                     ▼
-                              ┌──────────────┐
-                              │ Leave Review │
-                              └──────────────┘
-```
-
-### 👨‍🏫 Tutor Journey
-
-```
-                              ┌──────────────┐
-                              │   Register   │
-                              └──────────────┘
-                                     │
-                                     ▼
-                              ┌──────────────┐
-                              │Create Profile│
-                              └──────────────┘
-                                     │
-                                     ▼
-                              ┌──────────────┐
-                              │    Set       │
-                              │ Availability │
-                              └──────────────┘
-                                     │
-                                     ▼
-                              ┌──────────────┐
-                              │View Sessions │
-                              └──────────────┘
-                                     │
-                                     ▼
-                              ┌──────────────┐
-                              │Mark Complete │
-                              └──────────────┘
-```
-
-### 📊 Booking Status
-
-```
-                              ┌──────────────┐
-                              │  CONFIRMED   │
-                              │   (instant)  │
-                              └──────────────┘
-                               /            \
-                              /              \
-                       (tutor)          (student)
-                        marks            cancels
-                            /                \
-                           ▼                  ▼
-                   ┌──────────────┐   ┌──────────────┐
-                   │  COMPLETED   │   │  CANCELLED   │
-                   └──────────────┘   └──────────────┘
-```
-
----
-
-## Pages & Routes
-
-### Public Routes
-| Route | Page | Description |
-|-------|------|-------------|
-| `/` | Home | Hero, search, featured tutors |
-| `/tutors` | Browse Tutors | List with filters |
-| `/tutors/:id` | Tutor Profile | Details, reviews, book |
-| `/login` | Login | Login form |
-| `/register` | Register | Registration form |
-
-### Student Routes (Private)
-| Route | Page | Description |
-|-------|------|-------------|
-| `/dashboard` | Dashboard | Overview, bookings |
-| `/dashboard/bookings` | My Bookings | Booking history |
-| `/dashboard/profile` | Profile | Edit info |
-
-### Tutor Routes (Private)
-| Route | Page | Description |
-|-------|------|-------------|
-| `/tutor/dashboard` | Dashboard | Sessions, stats |
-| `/tutor/availability` | Availability | Set time slots |
-| `/tutor/profile` | Profile | Edit tutor info |
-
-### Admin Routes (Private)
-| Route | Page | Description |
-|-------|------|-------------|
-| `/admin` | Dashboard | Statistics |
-| `/admin/users` | Users | Manage users |
-| `/admin/bookings` | Bookings | All bookings |
-| `/admin/categories` | Categories | Manage categories |
-
----
-
-## Database Tables
-
-Design your own schema for the following tables:
-
-- **Users** - Store user information and authentication details
-- **TutorProfiles** - Tutor-specific information (linked to Users)
-- **Categories** - Subject categories for tutoring
-- **Bookings** - Session bookings between students and tutors
-- **Reviews** - Student reviews for tutors
-
----
-
-## API Endpoints
-
+* **Vercel**
 
 ### Authentication
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/api/auth/register` | Register new user |
-| POST | `/api/auth/login` | Login user |
-| GET | `/api/auth/me` | Get current user |
 
-### Tutors (Public)
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/tutors` | Get all tutors with filters |
-| GET | `/api/tutors/:id` | Get tutor details |
-| GET | `/api/categories` | Get all categories |
+* User Registration
+* User Login
+* Secure authentication
 
-### Bookings
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/api/bookings` | Create new booking |
-| GET | `/api/bookings` | Get user's bookings |
-| GET | `/api/bookings/:id` | Get booking details |
+### CRUD Operations
 
-### Tutor Management
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| PUT | `/api/tutor/profile` | Update tutor profile |
-| PUT | `/api/tutor/availability` | Update availability |
+Create, Read, Update, Delete functionality.
 
-### Reviews
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/api/reviews` | Create review |
+### Role-Based Access Control (RBAC)
 
-### Admin
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/admin/users` | Get all users |
-| PATCH | `/api/admin/users/:id` | Update user status |
+Example roles:
+
+* **Admin**
+* **User**
+
+Admins may manage data while users have limited permissions.
 
 ---
 
+# 📤 Submission Details
 
+Frontend Repo    : https://github.com/AsadFahimTEC/planora-client
+Backend Repo     : https://github.com/AsadFahimTEC/planora-server/tree/master
 
+Frontend Live    : https://planora-client.vercel.app
+Backend Live     : https://planora-server-eta.vercel.app
 
+Demo Video       : https://drive.google.com/drive/folders/1D9knQOv3oi1iPt7dCNwlmaLB14yoIO0C?usp=sharing
 
+Admin Email      : admin5@skillbridge.com
+Admin Password   : admin1234
+
+---
