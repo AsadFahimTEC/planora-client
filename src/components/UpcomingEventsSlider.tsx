@@ -40,66 +40,23 @@ const fetchEvents = async (): Promise<Event[]> => {
 };
 
 export default function UpcomingEventsSlider() {
-  const [isLoggedIn, setIsLoggedIn] = useState(true);
-
-  const { data, error, isLoading, refetch } = useQuery({
+  const [isLoggedIn, setIsLoggedIn] = useState(true); // Assume logged in by default
+    // ✅ Correctly typed useQuery
+  const { data, error, isLoading, refetch } = useQuery<Event[], Error>({
     queryKey: ["events"],
     queryFn: fetchEvents,
-    retry: 1, // retry once if failed
-    onError: (err: any) => {
+    retry: 1,
+    onError: (err: Error) => {
+      console.error("Fetch events error:", err.message);
       if (err.message.includes("Unauthorized")) {
-        setIsLoggedIn(false); // user not logged in
+        setIsLoggedIn(false);
       }
     },
   });
 
-  // 🔄 Loading state
-  if (isLoading) {
-    return (
-      <p className="text-center py-10 text-gray-500">Loading events...</p>
-    );
-  }
-
-  // ❌ Unauthorized
-  if (!isLoggedIn) {
-    return (
-      <div className="text-center py-10">
-        <p className="text-red-500 mb-2">
-          You are not logged in. Please login to see events.
-        </p>
-        <Link
-          href="/login"
-          className="px-4 py-2 bg-indigo-600 text-white rounded-full hover:bg-indigo-700 transition"
-        >
-          Login
-        </Link>
-      </div>
-    );
-  }
-
-  // ❌ Error
-  if (error instanceof Error) {
-    return (
-      <div className="text-center py-10">
-        <p className="text-red-500 mb-2">Error: {error.message}</p>
-        <button
-          onClick={() => refetch()}
-          className="px-4 py-2 bg-indigo-600 text-white rounded-full hover:bg-indigo-700 transition"
-        >
-          Retry
-        </button>
-      </div>
-    );
-  }
-
-  // 🚫 No events
-  if (!data || data.length === 0) {
-    return (
-      <p className="text-center py-10 text-gray-500">
-        No upcoming events found.
-      </p>
-    );
-  }
+  if (!isLoggedIn) return <p>Please log in to see events.</p>;
+  if (isLoading) return <p>Loading events...</p>;
+  if (error) return <p className="text-red-500">{error.message}</p>;
 
   // ✅ Events list
   return (
