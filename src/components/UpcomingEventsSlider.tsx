@@ -16,7 +16,7 @@ export default function UpcomingEventsSlider() {
   const [isLoggedIn, setIsLoggedIn] = useState(true);
 
   const fetchEvents = async (): Promise<Event[]> => {
-    const res = await fetch("http://localhost:5000/api/events", {
+    const res = await fetch("https://planora-server-eta.vercel.app/api/events", {
       credentials: "include",
     });
     if (!res.ok) throw new Error("Failed to fetch events");

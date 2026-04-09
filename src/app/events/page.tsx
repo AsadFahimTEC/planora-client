@@ -30,7 +30,7 @@ export default function EventsPage() {
         setError("");
 
         const token = localStorage.getItem("token"); // if using auth
-        const res = await fetch("http://localhost:5000/api/events", {
+        const res = await fetch("https://planora-server-eta.vercel.app/api/events", {
           headers: {
             "Content-Type": "application/json",
             ...(token ? { Authorization: `Bearer ${token}` } : {}),

@@ -32,7 +32,7 @@ export default function EventDetailsPage() {
         setError("");
 
         const token = localStorage.getItem("token"); // JWT auth if needed
-        const res = await fetch(`http://localhost:5000/api/events/${eventId}`, {
+        const res = await fetch(`https://planora-server-eta.vercel.app/api/events/${eventId}`, {
           headers: {
             "Content-Type": "application/json",
             ...(token ? { Authorization: `Bearer ${token}` } : {}),

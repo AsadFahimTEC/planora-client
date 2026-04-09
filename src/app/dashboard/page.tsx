@@ -98,7 +98,7 @@ export default function DashboardPage() {
       setLoading(true);
 
       // Events
-      const resEvents = await fetch("http://localhost:5000/api/events", {
+      const resEvents = await fetch("https://planora-server-eta.vercel.app/api/events", {
         credentials: "include",
       });
       const eventData = await resEvents.json();
@@ -125,7 +125,7 @@ export default function DashboardPage() {
       );
 
       // Invitations
-      const resInvites = await fetch("http://localhost:5000/api/invitations", {
+      const resInvites = await fetch("https://planora-server-eta.vercel.app/api/invitations", {
         credentials: "include",
       });
       const inviteData = await resInvites.json();
@@ -148,7 +148,7 @@ export default function DashboardPage() {
       );
 
       // Reviews
-      const resReviews = await fetch("http://localhost:5000/api/reviews", {
+      const resReviews = await fetch("https://planora-server-eta.vercel.app/api/reviews", {
         credentials: "include",
       });
       const reviewData = await resReviews.json();
@@ -168,7 +168,7 @@ export default function DashboardPage() {
       );
 
       // Admin Users
-      const resUsers = await fetch("http://localhost:5000/api/admin/users", {
+      const resUsers = await fetch("https://planora-server-eta.vercel.app/api/admin/users", {
         credentials: "include",
       });
       const userData = await resUsers.json();
@@ -213,7 +213,7 @@ export default function DashboardPage() {
           ? `/api/events/${eventId}/join`
           : `/api/events/${eventId}/request`;
 
-      const res = await fetch(`http://localhost:5000${endpoint}`, {
+      const res = await fetch(`https://planora-server-eta.vercel.app${endpoint}`, {
         method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
@@ -244,7 +244,7 @@ export default function DashboardPage() {
   // Paid Event Payment
   const handlePayment = async (event: EventCard) => {
     try {
-      const res = await fetch("http://localhost:5000/api/payments/sslcommerz", {
+      const res = await fetch("https://planora-server-eta.vercel.app/api/payments/sslcommerz", {
         method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
@@ -293,7 +293,7 @@ export default function DashboardPage() {
       };
 
       const res = await fetch(
-        `http://localhost:5000/api/events/${editingEvent.id}`,
+        `https://planora-server-eta.vercel.app/api/events/${editingEvent.id}`,
         {
           method: "PUT",
           credentials: "include",
@@ -327,7 +327,7 @@ export default function DashboardPage() {
     if (!confirm("Are you sure you want to delete this user?")) return;
     try {
       const res = await fetch(
-        `http://localhost:5000/api/admin/users/${userId}`,
+        `https://planora-server-eta.vercel.app/api/admin/users/${userId}`,
         { method: "DELETE", credentials: "include" },
       );
       if (!res.ok) throw new Error("Failed to delete user");
@@ -459,7 +459,7 @@ export default function DashboardPage() {
                               onClick={async () => {
                                 try {
                                   const res = await fetch(
-                                    `http://localhost:5000/api/events/${event.id}`,
+                                    `https://planora-server-eta.vercel.app/api/events/${event.id}`,
                                     {
                                       method: "DELETE",
                                       credentials: "include",

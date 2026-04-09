@@ -42,7 +42,7 @@ export default function DashboardDetailsPage() {
   // Fetch Events
   const fetchEvents = async () => {
     try {
-      const res = await fetch("http://localhost:5000/api/events");
+      const res = await fetch("https://planora-server-eta.vercel.app/api/events");
       if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
       const data = await res.json();
       setEvents(data.data || []);
@@ -54,7 +54,7 @@ export default function DashboardDetailsPage() {
   // Fetch Reviews
   const fetchReviews = async () => {
     try {
-      const res = await fetch("http://localhost:5000/api/reviews");
+      const res = await fetch("https://planora-server-eta.vercel.app/api/reviews");
       if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
       const data = await res.json();
       setReviews(data.data || []);

@@ -1,4 +1,4 @@
-export const API_BASE = "http://localhost:5000/api";
+export const API_BASE = "https://planora-server-eta.vercel.app/api";
 
 export const fetcher = async (url: string, options: RequestInit = {}
 ) => {

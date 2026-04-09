@@ -35,7 +35,7 @@ export function RegisterForm(props: React.ComponentProps<typeof Card>) {
 
   const handleGoogleLogin = async () => {
     const callbackURL =
-      process.env.FRONTEND_URL || "http://localhost:3000";
+      process.env.FRONTEND_URL || "https://planora-client.vercel.app";
 
     await authClient.signIn.social({
       provider: "google",

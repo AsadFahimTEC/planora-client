@@ -41,7 +41,7 @@ export default function EventDashboard() {
         // ✅ Use token if your backend requires auth
         const token = localStorage.getItem("token");
 
-        const res = await fetch("http://localhost:5000/api/events", {
+        const res = await fetch("https://planora-server-eta.vercel.app/api/events", {
           headers: {
             "Content-Type": "application/json",
             Authorization: token ? `Bearer ${token}` : "",
