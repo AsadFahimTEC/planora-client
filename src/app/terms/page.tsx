@@ -62,7 +62,7 @@ const TermsPage = () => {
   ];
 
   return (
-    <div className="bg-slate-100 dark:bg-slate-900 min-h-screen text-slate-800 dark:text-white font-sans relative overflow-hidden">
+    <div className="bg-[radial-gradient(circle_at_top_right,_rgba(99,102,241,0.16),_transparent_28%),radial-gradient(circle_at_bottom_left,_rgba(236,72,153,0.14),_transparent_24%),linear-gradient(180deg,_rgba(255,255,255,0.06),_rgba(15,23,42,0.4))] pointer-events-none min-h-screen text-slate-800 dark:text-white font-sans relative overflow-hidden">
 
       {/* Hero Section */}
       <section className="flex flex-col items-center justify-center text-center py-20 px-6 animate-fadeIn">

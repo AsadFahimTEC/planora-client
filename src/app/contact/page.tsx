@@ -15,7 +15,7 @@ const ContactPage = () => {
 
   if (loading) {
     return (
-      <div className="bg-slate-100 dark:bg-slate-900 min-h-screen p-6">
+      <div className="bg-[radial-gradient(circle_at_top_right,_rgba(99,102,241,0.16),_transparent_28%),radial-gradient(circle_at_bottom_left,_rgba(236,72,153,0.14),_transparent_24%),linear-gradient(180deg,_rgba(255,255,255,0.06),_rgba(15,23,42,0.4))] pointer-events-none min-h-screen p-6">
         <div className="max-w-2xl mx-auto space-y-6 animate-pulse">
           <div className="h-10 bg-slate-300 dark:bg-slate-700 rounded w-1/2 mx-auto"></div>
           <div className="h-6 bg-slate-300 dark:bg-slate-700 rounded w-3/4 mx-auto"></div>
